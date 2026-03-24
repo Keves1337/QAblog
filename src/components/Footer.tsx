@@ -14,7 +14,7 @@ const Footer = () => {
         {/* Project Links */}
         <div className="flex flex-wrap justify-center gap-4 pt-2">
           <a
-            href="https://keves1337.github.io/Settings-QA-AI/#/"
+            href="https://settings-qa-ai.replit.app"
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:border-accent transition-all duration-300"
