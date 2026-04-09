@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Mail, Phone, MapPin, Send, Shield, Zap, Eye, ChevronDown, ArrowUpRight } from "lucide-react";
 
@@ -195,6 +195,97 @@ const AmbientBg = () => (
     <div className="amb amb-3" />
   </>
 );
+
+/* ─── Glass Box ──────────────────────────────────────────────────────────── */
+const GbLine = ({ children }: { children: React.ReactNode }) => (
+  <div className="gb-line">{children}</div>
+);
+const Cm = ({ c }: { c: string }) => <span className="gb-cm">{c}</span>;
+const Kw = ({ c }: { c: string }) => <span className="gb-kw">{c}</span>;
+const Cl = ({ c }: { c: string }) => <span className="gb-cl">{c}</span>;
+const St = ({ c }: { c: string }) => <span className="gb-st">{c}</span>;
+const Vr = ({ c }: { c: string }) => <span className="gb-vr">{c}</span>;
+const Fn = ({ c }: { c: string }) => <span className="gb-fn">{c}</span>;
+const Nm = ({ c }: { c: string }) => <span className="gb-nm">{c}</span>;
+const Pu = ({ c }: { c: string }) => <span className="gb-pu">{c}</span>;
+
+const GlassBox = () => {
+  const boxRef  = useRef<HTMLDivElement>(null);
+  const [scan, setScan]     = useState(false);
+  const [jitter, setJitter] = useState(false);
+
+  const setXY = (x: number, y: number) => {
+    const el = boxRef.current;
+    if (!el) return;
+    el.style.setProperty("--gcx", `${x}px`);
+    el.style.setProperty("--gcy", `${y}px`);
+  };
+
+  const onMove = (e: React.MouseEvent) => {
+    const r = boxRef.current!.getBoundingClientRect();
+    setXY(e.clientX - r.left, e.clientY - r.top);
+  };
+  const onLeave = () => setXY(-300, -300);
+  const onTouch = (e: React.TouchEvent) => {
+    const r = boxRef.current!.getBoundingClientRect();
+    setXY(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+  };
+
+  const onClick = () => {
+    if (scan) return;
+    setScan(true);
+    setJitter(true);
+    setTimeout(() => setJitter(false), 900);
+    setTimeout(() => setScan(false), 900);
+  };
+
+  return (
+    <div
+      ref={boxRef}
+      className={`gb-root${scan ? " gb-scanning" : ""}`}
+      style={{ "--gcx": "-300px", "--gcy": "-300px" } as React.CSSProperties}
+      onMouseMove={onMove} onMouseLeave={onLeave}
+      onTouchMove={onTouch} onTouchEnd={onLeave}
+      onClick={onClick}
+    >
+      {/* ── Bottom layer: syntax-highlighted source ── */}
+      <div className={`gb-code${jitter ? " gb-jitter" : ""}`}>
+        <pre className="gb-pre">
+          <GbLine><Cm c="# // glass_box.py — QA Component Lab" /></GbLine>
+          <GbLine><Cm c="# Move cursor to X-ray · Click to run diagnostic" /></GbLine>
+          <GbLine>&nbsp;</GbLine>
+          <GbLine><Kw c="class " /><Cl c="GlassCard" /><Pu c="(" /><Cl c="Component" /><Pu c="):" /></GbLine>
+          <GbLine>{"    "}<Vr c="blur" /><Pu c="     = " /><Nm c="10.0" /><Cm c="   # backdrop-filter blur" /></GbLine>
+          <GbLine>{"    "}<Vr c="opacity" /><Pu c="  = " /><Nm c="0.08" /><Cm c="   # glass alpha channel" /></GbLine>
+          <GbLine>{"    "}<Vr c="cursor" /><Pu c="   = " /><Pu c="(" /><Nm c="-1" /><Pu c=", " /><Nm c="-1" /><Pu c=")" /><Cm c="  # x-ray origin" /></GbLine>
+          <GbLine>&nbsp;</GbLine>
+          <GbLine>{"    "}<Kw c="def " /><Fn c="xray" /><Pu c="(self, x: " /><Cl c="int" /><Pu c=", y: " /><Cl c="int" /><Pu c=") -&gt; " /><Cl c="None" /><Pu c=":" /></GbLine>
+          <GbLine>{"        "}<Vr c="self" /><Pu c="." /><Vr c="cursor " /><Pu c="= " /><Pu c="(" /><Vr c="x" /><Pu c=", " /><Vr c="y" /><Pu c=")" /></GbLine>
+          <GbLine>{"        "}<Vr c="self" /><Pu c="." /><Vr c="blur   " /><Pu c="= " /><Fn c="max" /><Pu c="(" /><Nm c="0.0" /><Pu c=", " /><Nm c="10.0 " /><Pu c="- " /><Nm c="8.0" /><Pu c=")" /></GbLine>
+          <GbLine>&nbsp;</GbLine>
+          <GbLine>{"    "}<Kw c="def " /><Fn c="run_diagnostic" /><Pu c="(self) -&gt; " /><Cl c="str" /><Pu c=":" /></GbLine>
+          <GbLine>{"        "}<Kw c="return " /><St c={`f"SCAN OK — {self.blur:.1f}px blur — {self.cursor}"`} /></GbLine>
+        </pre>
+      </div>
+
+      {/* ── Top layer: frosted glass + UI ── */}
+      <div className="gb-glass">
+        <div className="gb-ui">
+          <div className="gb-ui-label"><Cm c="# // QA Component Lab" /></div>
+          <div className="gb-ui-title">Glass<span style={{ color: ACC }}>Box</span></div>
+          <div className="gb-ui-desc">
+            Move cursor to X-ray the source code beneath the glass.
+            Click to run a system diagnostic scan.
+          </div>
+          <button className="gb-ui-btn" onClick={onClick}>Run Diagnostic →</button>
+        </div>
+      </div>
+
+      {/* Cursor ring indicator */}
+      <div className="gb-cursor-ring" aria-hidden="true" />
+    </div>
+  );
+};
 
 /* ────────────────────────────────────────────────────────────────────────── */
 export default function Index() {
@@ -502,6 +593,11 @@ export default function Index() {
                 <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65 }}>Full manual testing lifecycle: test case design, bug reporting, regression testing, Jira, web and mobile platforms.</p>
               </div>
             </div>
+          </BC>
+
+          {/* ══ GLASS BOX ════════════════════════════════════════════════════ */}
+          <BC col="span 3" innerStyle={{ padding: "0", overflow: "hidden", minHeight: "220px" }}>
+            <GlassBox />
           </BC>
 
           {/* ══ HOBBIES ═══════════════════════════════════════════════════════ */}
