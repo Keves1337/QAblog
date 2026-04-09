@@ -1,101 +1,88 @@
-import { Card } from "@/components/ui/card";
-import { Headphones, Palette, Bike, Gamepad2 } from "lucide-react";
+import { Headphones, Palette, Bike, Gamepad2, LucideIcon } from "lucide-react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
-const hobbiesData = [
-  {
-    title: "DJing & Music Mixing",
-    description:
-      "Crafting sonic experiences and keeping the dance floor alive. Music is not just a hobby—it's a way of life.",
-    icon: Headphones,
-    animationClass: "dj-animation",
-  },
-  {
-    title: "Design Creation",
-    description:
-      "Bringing ideas to life through Figma, Photoshop, and Illustrator. Every project is a canvas for creativity.",
-    icon: Palette,
-    animationClass: "design-animation",
-  },
-  {
-    title: "Motorcycle Riding",
-    description:
-      "Freedom on two wheels. There's nothing quite like the open road and the wind in your face.",
-    icon: Bike,
-    animationClass: "bike-animation",
-  },
-  {
-    title: "Competitive Gaming",
-    description:
-      "Sharpening reflexes and strategy through intense gaming sessions. Every match is an opportunity to learn and improve.",
-    icon: Gamepad2,
-    animationClass: "gaming-animation",
-  },
+const C    = "#00e5ff";
+const V    = "#a78bfa";
+const BOLD = "#f1f5f9";
+const TEXT = "rgba(226,232,240,0.58)";
+
+interface HobbyData {
+  title: string;
+  icon: LucideIcon;
+  animClass: string;
+  accent: string;
+  delay: "sr-delay-1" | "sr-delay-2" | "sr-delay-3" | "sr-delay-4";
+  desc: string;
+}
+
+const hobbies: HobbyData[] = [
+  { title: "DJing_&_Music",       icon: Headphones, animClass: "dj-animation",     accent: C, delay: "sr-delay-1",
+    desc: "Crafting sonic experiences with Cubase, FL Studio, and Ableton. Music production trains the ear for subtle imperfections — a mindset that carries directly into QA." },
+  { title: "Design_&_Creativity", icon: Palette,    animClass: "design-animation", accent: V, delay: "sr-delay-2",
+    desc: "Bringing ideas to life through Figma, Photoshop, and Illustrator. A strong design sense helps evaluate UX quality and catch visual regressions others miss." },
+  { title: "Motorcycle_Riding",   icon: Bike,       animClass: "bike-animation",   accent: C, delay: "sr-delay-3",
+    desc: "Freedom on two wheels. Riding demands constant situational awareness and fast decisions — skills that translate well to high-pressure testing environments." },
+  { title: "Competitive_Gaming",  icon: Gamepad2,   animClass: "gaming-animation", accent: V, delay: "sr-delay-4",
+    desc: "Strategic thinking, pattern recognition, rapid iteration. Every session practices identifying edge cases, reproducing issues, and communicating clearly under pressure." },
 ];
 
-const Hobbies = () => {
+/* Extracted to its own component so the hook is always called at the top level */
+const HobbyCard = ({ h }: { h: HobbyData }) => {
+  const cardRef = useScrollReveal({ rootMargin: "0px 0px -40px 0px" });
+  const Icon = h.icon;
+
   return (
-    <section className="section-padding bg-muted/30">
-      <div className="max-w-6xl mx-auto space-y-12">
-        <div className="space-y-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold">When I'm Not Working</h2>
-          <div className="h-1 w-20 bg-gradient-accent rounded-full mx-auto" />
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            These passions keep me inspired and balanced
+    <div
+      ref={cardRef}
+      className={`sr-hidden ${h.delay} glass ${h.animClass}`}
+      style={{
+        padding: "1.5rem",
+        borderRadius: "6px",
+        transition: "border-color 0.25s, box-shadow 0.25s",
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLDivElement;
+        el.style.borderColor = h.accent === C ? "rgba(0,229,255,0.3)" : "rgba(167,139,250,0.3)";
+        el.style.boxShadow = h.accent === C ? "0 0 20px rgba(0,229,255,0.06)" : "0 0 20px rgba(167,139,250,0.06)";
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLDivElement;
+        el.style.borderColor = "rgba(255,255,255,0.08)";
+        el.style.boxShadow = "none";
+      }}
+    >
+      <div style={{ marginBottom: "1rem" }}>
+        <Icon style={{ width: "1.3rem", height: "1.3rem", color: h.accent }} strokeWidth={1.5} />
+      </div>
+      <h3 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.85rem", fontWeight: 700, color: BOLD, marginBottom: "0.6rem" }}>
+        {h.title}
+      </h3>
+      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.8rem", lineHeight: 1.65, color: TEXT }}>
+        {h.desc}
+      </p>
+    </div>
+  );
+};
+
+const Hobbies = () => {
+  const headRef = useScrollReveal();
+
+  return (
+    <section id="hobbies" style={{ padding: "6rem 1.5rem", background: "#070711" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+
+        <div ref={headRef} className="sr-hidden" style={{ marginBottom: "3.5rem" }}>
+          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.28em", color: C, marginBottom: "1rem" }}>
+            {"// Beyond the Test Suite"}
           </p>
+          <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "clamp(2.2rem,6vw,3.8rem)", fontWeight: 800, letterSpacing: "-0.03em", color: BOLD, marginBottom: "1rem" }}>
+            Who_I_Am_Outside_Work
+          </h2>
+          <div className="amber-line" />
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {hobbiesData.map((hobby, index) => (
-            <Card
-              key={hobby.title}
-              className="p-6 text-center space-y-4 hover:shadow-medium transition-all duration-300 hover:-translate-y-2 hover:scale-105 border-border/50 group overflow-hidden relative"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className={`relative flex items-center justify-center h-20 ${hobby.animationClass}`}>
-                <hobby.icon className="w-16 h-16 text-accent transition-all duration-300 group-hover:text-primary" strokeWidth={1.5} />
-                
-                {/* Music notes for DJ */}
-                {hobby.animationClass === "dj-animation" && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="absolute top-0 left-1/4 text-2xl animate-[bounce_0.6s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>♪</span>
-                    <span className="absolute top-2 right-1/4 text-xl animate-[bounce_0.6s_ease-in-out_infinite]" style={{ animationDelay: '0.2s' }}>♫</span>
-                    <span className="absolute top-4 left-1/3 text-lg animate-[bounce_0.6s_ease-in-out_infinite]" style={{ animationDelay: '0.4s' }}>♪</span>
-                  </div>
-                )}
-                
-                {/* Paint splatter for Design */}
-                {hobby.animationClass === "design-animation" && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-accent rounded-full animate-ping" style={{ animationDelay: '0s' }} />
-                    <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDelay: '0.2s' }} />
-                    <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-accent/70 rounded-full animate-ping" style={{ animationDelay: '0.4s' }} />
-                  </div>
-                )}
-                
-                {/* Smoke effect for Motorcycle */}
-                {hobby.animationClass === "bike-animation" && (
-                  <div className="absolute bottom-0 right-1/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-8 h-2 bg-muted-foreground/30 rounded-full animate-[slide-out-right_0.8s_ease-out_infinite] blur-sm" style={{ animationDelay: '0s' }} />
-                    <div className="w-6 h-2 bg-muted-foreground/20 rounded-full animate-[slide-out-right_0.8s_ease-out_infinite] blur-sm mt-1" style={{ animationDelay: '0.2s' }} />
-                  </div>
-                )}
-                
-                {/* Bullet trails for Gaming */}
-                {hobby.animationClass === "gaming-animation" && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute left-0 top-1/4 h-1 w-12 bg-accent rounded-full animate-[slide-out-right_0.8s_ease-in-out_infinite]" style={{ animationDelay: '0s' }} />
-                    <div className="absolute left-0 top-1/2 h-1 w-16 bg-primary/80 rounded-full animate-[slide-out-right_0.9s_ease-in-out_infinite]" style={{ animationDelay: '0.2s' }} />
-                    <div className="absolute left-0 top-3/4 h-1 w-10 bg-accent/70 rounded-full animate-[slide-out-right_0.7s_ease-in-out_infinite]" style={{ animationDelay: '0.4s' }} />
-                  </div>
-                )}
-              </div>
-              
-              <h3 className="text-xl font-semibold">{hobby.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {hobby.description}
-              </p>
-            </Card>
-          ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: "1rem" }}>
+          {hobbies.map(h => <HobbyCard key={h.title} h={h} />)}
         </div>
       </div>
     </section>
