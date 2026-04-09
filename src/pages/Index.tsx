@@ -236,7 +236,7 @@ const GlassBox = () => {
     setScan(true);
     setJitter(true);
     setTimeout(() => setJitter(false), 900);
-    setTimeout(() => setScan(false), 900);
+    setTimeout(() => setScan(false), 1800);
   };
 
   return (

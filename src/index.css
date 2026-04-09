@@ -365,6 +365,7 @@
     background: rgba(6, 6, 20, 0.78);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    transition: background 0.12s ease, backdrop-filter 0.12s ease;
     /* X-ray mask: nearly transparent inside cursor circle, fully opaque outside */
     mask-image: radial-gradient(
       circle 120px at var(--gcx, -300px) var(--gcy, -300px),
@@ -456,6 +457,13 @@
   }
   .gb-jitter {
     animation: gb-jitter 0.9s steps(1) forwards;
+  }
+
+  /* Glass becomes nearly transparent during scan — code fully visible */
+  .gb-scanning .gb-glass {
+    background: rgba(6, 6, 20, 0.10);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
   }
 
   /* Scanline overlay during diagnostic */
