@@ -33,27 +33,12 @@ const BC = ({
   col?: string; row?: string; minH?: string;
   className?: string;
 }) => (
-  <motion.div variants={cardV} className="card-outer"
+  <motion.div variants={cardV}
     style={{ gridColumn: col, gridRow: row, minHeight: minH, display: "flex", flexDirection: "column" }}
   >
     <div className={`bento-card tilt-target ${className}`}
       style={{ padding: "24px", flex: 1, ...innerStyle }}
-    >
-      {/* Behind orbs — inside card, clipped by overflow:hidden, glow at edges */}
-      <div className="horbs-behind" aria-hidden="true">
-        <div className="horb h-tl" />
-        <div className="horb h-tr" />
-        <div className="horb h-bl" />
-        <div className="horb h-br" />
-      </div>
-      {children}
-    </div>
-    {/* Front orbs — outside card boundary, visually float above it */}
-    <div className="horbs-front" aria-hidden="true">
-      <div className="horb h-f1" />
-      <div className="horb h-f2" />
-      <div className="horb h-f3" />
-    </div>
+    >{children}</div>
   </motion.div>
 );
 
