@@ -1,0 +1,368 @@
+/* ─── Z-Portfolio: Three.js depth-travel experience ───────────────────── */
+
+/* ── Root ────────────────────────────────────────────────────────────── */
+.zp-root {
+  position: fixed; inset: 0;
+  background: #050505;
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* ── Scanlines ────────────────────────────────────────────────────────── */
+.zp-scanlines {
+  position: fixed; inset: 0; z-index: 900;
+  pointer-events: none; opacity: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,255,65,0.035) 3px,
+    rgba(0,255,65,0.035) 4px
+  );
+  transition: opacity 0.15s;
+}
+
+/* ── HUD base ─────────────────────────────────────────────────────────── */
+.zp-hud {
+  position: fixed; z-index: 500;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  pointer-events: none;
+  padding: 14px 18px;
+  border: 1px solid rgba(0,255,65,0.2);
+  background: rgba(0,15,5,0.65);
+  backdrop-filter: blur(12px);
+  border-radius: 4px;
+  min-width: 220px;
+}
+.zp-hud-tl { top: 18px; left: 18px; }
+.zp-hud-bl { bottom: 18px; left: 18px; }
+.zp-hud-tr { top: 18px; right: 18px; }
+
+.hud-label {
+  font-size: 0.58rem; font-weight: 700;
+  color: rgba(0,255,65,0.5);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.hud-value {
+  font-size: 0.78rem; font-weight: 700;
+  color: #00ff41;
+  letter-spacing: 0.04em;
+}
+.hud-bar {
+  width: 100%; height: 5px;
+  background: rgba(0,255,65,0.12);
+  border-radius: 3px; overflow: hidden;
+  margin-top: 5px;
+}
+.hud-bar-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.2s, background 0.4s;
+}
+
+/* ── Scroll hint ──────────────────────────────────────────────────────── */
+.zp-scroll-hint {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; font-weight: 700;
+  color: rgba(129,140,248,0.45);
+  letter-spacing: 0.2em;
+  z-index: 400; pointer-events: none;
+  animation: hint-pulse 2.5s ease-in-out infinite;
+}
+@keyframes hint-pulse {
+  0%,100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+  50%      { opacity: 1;   transform: translateX(-50%) translateY(-5px); }
+}
+
+/* ── Plates base ─────────────────────────────────────────────────────── */
+.zp-plate {
+  width: 900px;
+  min-height: 560px;
+  position: relative;
+  border-radius: 14px;
+  background: rgba(8,8,22,0.88);
+  border: 1px solid rgba(129,140,248,0.14);
+  box-shadow: 0 0 0 0 rgba(0,255,65,0);
+  overflow: hidden;
+  transition:
+    background    0.7s ease,
+    border-color  0.7s ease,
+    box-shadow    0.7s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Grid overlay (always present, opacity toggled) */
+.zp-plate::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,65,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.7s ease;
+}
+
+/* Glow edge (appears in wireframe mode) */
+.zp-plate::after {
+  content: "";
+  position: absolute; inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 30px rgba(0,255,65,0.0), inset 0 0 40px rgba(0,255,65,0.0);
+  transition: box-shadow 0.7s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Inner content layer */
+.zp-inner {
+  position: relative; z-index: 1;
+  padding: 48px 52px;
+  transition: opacity 0.7s ease, filter 0.7s ease;
+}
+
+/* ── Wireframe state ─────────────────────────────────────────────────── */
+.zp-plate.zp-wireframe {
+  background: rgba(0,18,7,0.22);
+  border-color: rgba(0,255,65,0.55);
+  box-shadow: 0 0 40px rgba(0,255,65,0.1);
+}
+.zp-plate.zp-wireframe::before { opacity: 1; }
+.zp-plate.zp-wireframe::after {
+  box-shadow: 0 0 30px rgba(0,255,65,0.18), inset 0 0 40px rgba(0,255,65,0.07);
+}
+.zp-plate.zp-wireframe .zp-inner {
+  opacity: 0.12;
+  filter: saturate(0) hue-rotate(90deg) brightness(1.4);
+}
+
+/* ── Hi-fi state ─────────────────────────────────────────────────────── */
+.zp-plate.zp-hifi {
+  background: rgba(8,8,22,0.88);
+  border-color: rgba(129,140,248,0.14);
+  box-shadow: none;
+  pointer-events: auto;
+  user-select: text;
+}
+.zp-plate.zp-hifi::before { opacity: 0; }
+.zp-plate.zp-hifi::after  { box-shadow: none; }
+.zp-plate.zp-hifi .zp-inner { opacity: 1; filter: none; }
+
+/* ── Plate typography ────────────────────────────────────────────────── */
+.zp-plate h1 {
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 900; letter-spacing: -0.05em; line-height: 0.96;
+  color: #f8fafc; margin: 0 0 20px;
+}
+.zp-plate h2 {
+  font-size: 1.6rem; font-weight: 800;
+  letter-spacing: -0.03em; color: #f8fafc;
+  margin: 0 0 16px;
+}
+.zp-plate h3 {
+  font-size: 1rem; font-weight: 700;
+  color: rgba(248,250,252,0.6);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin: 0 0 12px;
+}
+.zp-plate p {
+  color: rgba(248,250,252,0.5);
+  font-size: 0.92rem; line-height: 1.75;
+  margin: 0 0 14px;
+}
+.zp-plate a { color: #818cf8; text-decoration: none; }
+.zp-plate a:hover { color: #f8fafc; }
+
+/* Accent color */
+.zp-acc { color: #818cf8; }
+.zp-green { color: #22c55e; }
+.zp-bold { color: #f8fafc; font-weight: 700; }
+
+/* ── Badge ────────────────────────────────────────────────────────────── */
+.zp-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 99px;
+  border: 1px solid rgba(129,140,248,0.25);
+  background: rgba(129,140,248,0.08);
+  font-size: 0.75rem; font-weight: 700;
+  color: #818cf8; letter-spacing: 0.04em;
+  margin-bottom: 22px;
+}
+.zp-badge .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: zp-pulse 2s infinite;
+}
+@keyframes zp-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ── Plate nav row ────────────────────────────────────────────────────── */
+.zp-nav-row {
+  display: flex; gap: 28px;
+  font-size: 0.78rem; font-weight: 600;
+  color: rgba(248,250,252,0.35);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 36px;
+}
+.zp-nav-row span.active { color: #818cf8; }
+
+/* ── Stat row ─────────────────────────────────────────────────────────── */
+.zp-stats {
+  display: flex; gap: 40px;
+  margin-top: 32px; padding-top: 28px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.zp-stat-val {
+  font-size: 2.4rem; font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.zp-stat-val.acc { color: #818cf8; }
+.zp-stat-val.grn { color: #22c55e; }
+.zp-stat-label {
+  font-size: 0.72rem; color: rgba(248,250,252,0.4);
+  margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.zp-btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.zp-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 24px; border-radius: 9px;
+  font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; text-decoration: none;
+  transition: opacity 0.15s, box-shadow 0.2s;
+  border: none; font-family: inherit;
+}
+.zp-btn-primary {
+  background: #818cf8; color: #050505;
+}
+.zp-btn-primary:hover {
+  opacity: 0.85;
+  box-shadow: 0 0 28px rgba(129,140,248,0.55);
+  color: #050505;
+}
+.zp-btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(248,250,252,0.5);
+}
+.zp-btn-ghost:hover {
+  border-color: #818cf8;
+  color: #f8fafc;
+}
+
+/* ── Skills grid ─────────────────────────────────────────────────────── */
+.zp-skills-wrap {
+  display: flex; flex-wrap: wrap; gap: 9px;
+  margin-top: 8px;
+}
+.zp-skill-tag {
+  padding: 6px 16px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+  font-size: 0.78rem; font-weight: 500;
+  color: rgba(248,250,252,0.55);
+  transition: border-color 0.2s, color 0.2s;
+}
+.zp-skill-tag:hover {
+  border-color: rgba(129,140,248,0.4);
+  color: #f8fafc;
+}
+.zp-skill-tag.cat-qa   { border-color: rgba(129,140,248,0.25); color: rgba(129,140,248,0.85); }
+.zp-skill-tag.cat-tool { border-color: rgba(34,197,94,0.25);  color: rgba(34,197,94,0.85);  }
+.zp-skill-tag.cat-dev  { border-color: rgba(251,191,36,0.25); color: rgba(251,191,36,0.85); }
+
+/* ── IDE code block ──────────────────────────────────────────────────── */
+.zp-ide {
+  background: #0d1117; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.07);
+  overflow: hidden; margin-top: 20px;
+}
+.zp-ide-bar {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 16px;
+  background: #161b22;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.zp-ide-dot {
+  width: 11px; height: 11px; border-radius: 50%;
+}
+.zp-ide-filename {
+  margin-left: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; color: rgba(248,250,252,0.3);
+}
+.zp-ide-body {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; line-height: 1.8;
+  color: #c9d1d9; overflow-x: auto;
+}
+.zp-ide-body .cm  { color: #6a737d; }
+.zp-ide-body .kw  { color: #ff7b72; }
+.zp-ide-body .im  { color: #ffa657; }
+.zp-ide-body .cls { color: #79c0ff; }
+.zp-ide-body .str { color: #a5d6ff; }
+.zp-ide-body .num { color: #79c0ff; }
+.zp-ide-body .fn  { color: #d2a8ff; }
+.zp-ide-body .var { color: #c9d1d9; }
+.zp-ide-body .pm  { color: #ffa657; }
+.zp-ide-body .op  { color: rgba(201,209,217,0.5); }
+
+/* ── Contact form ────────────────────────────────────────────────────── */
+.zp-form { display: flex; flex-direction: column; gap: 14px; }
+.zp-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.zp-form-label {
+  font-size: 0.65rem; font-weight: 700;
+  color: rgba(248,250,252,0.3);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 5px; display: block;
+}
+.zp-input, .zp-textarea, .zp-select {
+  width: 100%; padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: #f8fafc; font-size: 0.84rem;
+  font-family: inherit; outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.zp-input:focus, .zp-textarea:focus, .zp-select:focus {
+  border-color: rgba(129,140,248,0.5);
+}
+.zp-textarea { resize: vertical; min-height: 80px; }
+.zp-select { appearance: none; cursor: pointer; }
+
+/* ── About layout ────────────────────────────────────────────────────── */
+.zp-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px; align-items: start;
+}
+.zp-contact-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.82rem; color: rgba(248,250,252,0.45);
+  margin-bottom: 10px;
+}
+.zp-contact-row svg, .zp-contact-row .ci {
+  width: 14px; height: 14px; flex-shrink: 0;
+  color: #818cf8;
+}
+
+/* ── Plate number label ──────────────────────────────────────────────── */
+.zp-plate-num {
+  position: absolute; top: 20px; right: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; font-weight: 700;
+  color: rgba(129,140,248,0.3);
+  letter-spacing: 0.1em;
+}
