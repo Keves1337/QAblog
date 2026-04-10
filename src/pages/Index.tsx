@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Mail, Phone, MapPin, Send, Shield, Zap, Eye, ChevronDown, ArrowUpRight } from "lucide-react";
 
@@ -20,11 +20,11 @@ const cardV = {
     transition: { type: "spring", damping: 20, stiffness: 260 } },
 };
 
-/* ─── Hook: detect mobile (≤640 px) ────────────────────────────────────── */
+/* ─── Hook: detect mobile (< 768 px) ───────────────────────────────────── */
 const useIsMobile = () => {
-  const [m, setM] = useState(() => typeof window !== "undefined" && window.innerWidth <= 640);
+  const [m, setM] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
   useEffect(() => {
-    const fn = () => setM(window.innerWidth <= 640);
+    const fn = () => setM(window.innerWidth < 768);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
@@ -480,7 +480,7 @@ export default function Index() {
           </BC>
 
           {/* ══ PHOTO ═════════════════════════════════════════════════════════ */}
-          <BC row="span 2" innerStyle={{ padding: "0", overflow: "hidden" }}>
+          <BC row="span 2" innerStyle={{ padding: "0", overflow: "hidden" }} className="photo-bc">
             <div className="photo-inner" style={{ position: "relative", width: "100%", height: "100%", minHeight: "340px" }}>
               <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
                 style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 15%", display: "block", filter: "grayscale(30%) contrast(1.12) brightness(0.82) saturate(0.88)" }}
@@ -797,40 +797,36 @@ export default function Index() {
       </main>
 
       <style>{`
-        @media (max-width: 640px) {
-          /* Nav */
+        @media (max-width: 767px) {
+          /* Nav: compact, hide text links */
           nav { padding: 0 16px !important; }
           .nav-links a[href^="#"] { display: none !important; }
 
-          /* Grid container → single column */
+          /* Grid → single column, full-width cards */
           main > div {
             grid-template-columns: 1fr !important;
             gap: 8px !important;
             padding: 10px 10px 40px !important;
           }
-          /* Every grid item → full-width, auto row */
           main > div > div {
             grid-column: span 1 !important;
             grid-row:    span 1 !important;
           }
 
-          /* Photo card: pin to a sensible height so it doesn't swallow the page */
-          .photo-inner {
-            min-height: 240px !important;
-            max-height: 300px !important;
-            height: 260px !important;
-          }
+          /* Hide the portrait photo — on mobile it just looks like a dark empty block */
+          .photo-bc { display: none !important; }
 
           /* Hero h1 */
           h1 { font-size: clamp(2rem, 9vw, 2.8rem) !important; }
 
+          /* IDE: allow horizontal scroll so code doesn't break layout */
+          .ide-body { overflow-x: auto !important; }
+          .ide-body pre { min-width: max-content; }
+
           /* Hobbies: 4-col → 2×2 */
           .hobbies-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .hobbies-grid > div:nth-child(2n)  { border-right: none !important; }
-          .hobbies-grid > div:nth-child(-n+2){ border-bottom: 1px solid rgba(255,255,255,0.055) !important; }
-
-          /* Kill 3D tilt on touch — no pointer precision */
-          .tilt-target { transform: none !important; }
+          .hobbies-grid > div:nth-child(2n)   { border-right: none !important; }
+          .hobbies-grid > div:nth-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.055) !important; }
         }
         a { -webkit-tap-highlight-color: transparent; }
       `}</style>
