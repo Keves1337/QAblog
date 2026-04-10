@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Mail, Phone, MapPin, Send, Shield, Zap, Eye, ChevronDown, ArrowUpRight } from "lucide-react";
 
@@ -18,6 +18,17 @@ const cardV = {
   hidden: { opacity: 0, y: 30, rotateX: 14, scale: 0.95 },
   show:   { opacity: 1, y: 0,  rotateX: 0,  scale: 1,
     transition: { type: "spring", damping: 20, stiffness: 260 } },
+};
+
+/* ─── Hook: detect mobile (≤640 px) ────────────────────────────────────── */
+const useIsMobile = () => {
+  const [m, setM] = useState(() => typeof window !== "undefined" && window.innerWidth <= 640);
+  useEffect(() => {
+    const fn = () => setM(window.innerWidth <= 640);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return m;
 };
 
 /*
@@ -289,6 +300,7 @@ const GlassBox = () => {
 
 /* ────────────────────────────────────────────────────────────────────────── */
 export default function Index() {
+  const isMobile = useIsMobile();
 
   /* Combined effect: mouse-glow CSS vars + 3D tilt (tilt delayed past entrance) */
   useEffect(() => {
@@ -397,9 +409,9 @@ export default function Index() {
 
       {/* ── Bento grid — perspective wrapper gives entrance cards a 3D origin ── */}
       <main style={{ position: "relative", zIndex: 2, paddingTop: "54px" }}>
-        <motion.div id="about" variants={ctn} initial="hidden" animate="show"
+        <motion.div id="about" variants={ctn} initial={isMobile ? false : "hidden"} animate="show"
           style={{
-            perspective: "1800px", perspectiveOrigin: "50% -10%",
+            ...(isMobile ? {} : { perspective: "1800px", perspectiveOrigin: "50% -10%" }),
             display: "grid", gridTemplateColumns: "repeat(3,1fr)",
             gap: "10px", maxWidth: "1140px", margin: "0 auto",
             padding: "18px 18px 48px",
@@ -469,7 +481,7 @@ export default function Index() {
 
           {/* ══ PHOTO ═════════════════════════════════════════════════════════ */}
           <BC row="span 2" innerStyle={{ padding: "0", overflow: "hidden" }}>
-            <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "340px" }}>
+            <div className="photo-inner" style={{ position: "relative", width: "100%", height: "100%", minHeight: "340px" }}>
               <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
                 style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 15%", display: "block", filter: "grayscale(30%) contrast(1.12) brightness(0.82) saturate(0.88)" }}
               />
@@ -786,7 +798,7 @@ export default function Index() {
 
       <style>{`
         @media (max-width: 640px) {
-          /* Nav: tighten padding, hide text links (keep logo + BehemothQA button) */
+          /* Nav */
           nav { padding: 0 16px !important; }
           .nav-links a[href^="#"] { display: none !important; }
 
@@ -796,28 +808,29 @@ export default function Index() {
             gap: 8px !important;
             padding: 10px 10px 40px !important;
           }
-
-          /* Every grid item → full width, auto height */
+          /* Every grid item → full-width, auto row */
           main > div > div {
             grid-column: span 1 !important;
-            grid-row: span 1 !important;
+            grid-row:    span 1 !important;
           }
 
-          /* Hobbies: 4-col → 2-col */
-          .hobbies-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-          /* Remove right border from second column items */
-          .hobbies-grid > div:nth-child(2n) {
-            border-right: none !important;
-          }
-          /* Add bottom border to top row */
-          .hobbies-grid > div:nth-child(-n+2) {
-            border-bottom: 1px solid rgba(255,255,255,0.055) !important;
+          /* Photo card: pin to a sensible height so it doesn't swallow the page */
+          .photo-inner {
+            min-height: 240px !important;
+            max-height: 300px !important;
+            height: 260px !important;
           }
 
-          /* Scale down large heading on hero */
-          h1 { font-size: clamp(2.2rem, 10vw, 3rem) !important; }
+          /* Hero h1 */
+          h1 { font-size: clamp(2rem, 9vw, 2.8rem) !important; }
+
+          /* Hobbies: 4-col → 2×2 */
+          .hobbies-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .hobbies-grid > div:nth-child(2n)  { border-right: none !important; }
+          .hobbies-grid > div:nth-child(-n+2){ border-bottom: 1px solid rgba(255,255,255,0.055) !important; }
+
+          /* Kill 3D tilt on touch — no pointer precision */
+          .tilt-target { transform: none !important; }
         }
         a { -webkit-tap-highlight-color: transparent; }
       `}</style>
