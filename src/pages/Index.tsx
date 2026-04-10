@@ -378,6 +378,7 @@ export default function Index() {
           Johnatan<span style={{ color: ACC }}>.</span>
         </motion.span>
         <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }}
+          className="nav-links"
           style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {["About","Projects","Skills","Contact"].map(l => (
             <a key={l} href={`#${l.toLowerCase()}`}
@@ -607,7 +608,7 @@ export default function Index() {
               <span style={{ fontSize: "0.67rem", fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.12em" }}>Beyond the Test Suite</span>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", margin: "14px 0 0" }}>
+            <div className="hobbies-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", margin: "14px 0 0" }}>
               {[
 
                 /* ── 01 · Sound & Rhythm ─────────────────────────────────────── */
@@ -784,13 +785,39 @@ export default function Index() {
       </main>
 
       <style>{`
-        @media (max-width: 860px) {
-          main .bento-grid { grid-template-columns: repeat(2,1fr) !important; }
-        }
-        @media (max-width: 560px) {
-          main > div > div { grid-template-columns: 1fr !important; gap: 8px !important; }
-          main > div > div > div { grid-column: span 1 !important; grid-row: span 1 !important; }
-          nav a:not([href*="behemoth"]):not([href="#about"]):not([href="#contact"]) { font-size: 0.72rem; }
+        @media (max-width: 640px) {
+          /* Nav: tighten padding, hide text links (keep logo + BehemothQA button) */
+          nav { padding: 0 16px !important; }
+          .nav-links a[href^="#"] { display: none !important; }
+
+          /* Grid container → single column */
+          main > div {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+            padding: 10px 10px 40px !important;
+          }
+
+          /* Every grid item → full width, auto height */
+          main > div > div {
+            grid-column: span 1 !important;
+            grid-row: span 1 !important;
+          }
+
+          /* Hobbies: 4-col → 2-col */
+          .hobbies-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          /* Remove right border from second column items */
+          .hobbies-grid > div:nth-child(2n) {
+            border-right: none !important;
+          }
+          /* Add bottom border to top row */
+          .hobbies-grid > div:nth-child(-n+2) {
+            border-bottom: 1px solid rgba(255,255,255,0.055) !important;
+          }
+
+          /* Scale down large heading on hero */
+          h1 { font-size: clamp(2.2rem, 10vw, 3rem) !important; }
         }
         a { -webkit-tap-highlight-color: transparent; }
       `}</style>
