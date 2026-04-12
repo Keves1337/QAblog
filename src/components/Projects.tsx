@@ -13,9 +13,9 @@ const BOLD  = "#f1f5f9";
 const base = import.meta.env.BASE_URL;
 
 const SCREENSHOTS = [
-  { src: `${base}bqa-report.png`,    label: "report",    caption: "Security scan of checkpoint.com — 0 critical, 4 high, 9 warnings, 17 passed" },
-  { src: `${base}bqa-ddos.png`,      label: "ddos",      caption: "DDoS mode — 50K requests, 2K concurrent, spoofed IPs, randomised headers" },
-  { src: `${base}bqa-dashboard.png`, label: "dashboard", caption: "Pipeline view — Planning, Requirements, Design, Development stages" },
+  { src: `${base}bqa-report.png`,    label: "report",    caption: "Security scan of checkpoint.com: 0 critical, 4 high, 9 warnings, 17 passed" },
+  { src: `${base}bqa-ddos.png`,      label: "ddos",      caption: "DDoS mode: 50K requests, 2K concurrent, spoofed IPs, randomised headers" },
+  { src: `${base}bqa-dashboard.png`, label: "dashboard", caption: "Pipeline view: Planning, Requirements, Design, Development stages" },
 ];
 
 const MODULES = [
@@ -23,8 +23,8 @@ const MODULES = [
   { id: "AUTH-02", label: "Auth Abyss",      status: "armed",    color: G,   desc: "Floods with 60 unique fake JWT tokens concurrently to measure auth latency drift and IdP bottleneck." },
   { id: "RES-03", label: "Resource Vampire", status: "active",   color: C,   desc: "Sends 22 levels of deeply nested JSON to trigger non-linear CPU and RAM amplification." },
   { id: "NET-04", label: "Phantom IP Storm", status: "armed",    color: G,   desc: "Rotates 80 spoofed IPs via X-Forwarded-For to test behavioral rate-limit bypass." },
-  { id: "TCP-05", label: "SourDoS",          status: "idle",     color: DIM, desc: "TCP Fragment Overlap — splits payload across 3 fragments to test firewall reassembly." },
-  { id: "CVE-06", label: "EBOLA2Shell",      status: "critical", color: "#ef4444", desc: "BOLA + React2Shell (CVE-2025-55182) — enumerates IDs then targets RSC endpoints." },
+  { id: "TCP-05", label: "SourDoS",          status: "idle",     color: DIM, desc: "TCP Fragment Overlap, splits payload across 3 fragments to test firewall reassembly." },
+  { id: "CVE-06", label: "EBOLA2Shell",      status: "critical", color: "#ef4444", desc: "BOLA + React2Shell (CVE-2025-55182): enumerates IDs then targets RSC endpoints." },
 ];
 
 const STATS = [

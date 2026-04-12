@@ -278,7 +278,7 @@ const Hero = () => {
           </h1>
 
           <p id="hero-sub">
-            Johnatan Milrad — Manual QA graduate combining a self-taught designer's
+            Johnatan Milrad, Manual QA graduate combining a self-taught designer's
             instinct with systematic testing to catch what others miss.
           </p>
 

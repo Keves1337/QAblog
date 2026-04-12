@@ -35,7 +35,7 @@ const About = () => {
             I'm <span style={{ color: B, fontWeight: 600 }}>Johnatan Milrad</span>, a 33-year-old based in{" "}
             <span style={{ color: B, fontWeight: 600 }}>Ashdod, Israel</span>, at the very beginning of my journey as a{" "}
             <span style={{ color: C, fontWeight: 600 }}>QA Engineer</span>.
-            {" "}Not coming from a traditional software background — and that's exactly what makes my perspective worth paying attention to.
+            {" "}Not coming from a traditional software background. That's exactly what makes my perspective worth paying attention to.
           </p>
 
           <p ref={p2Ref} className="sr-hidden sr-delay-2">
@@ -43,7 +43,7 @@ const About = () => {
             <span style={{ color: B, fontWeight: 600 }}>Figma</span>,{" "}
             <span style={{ color: B, fontWeight: 600 }}>Photoshop</span>, and{" "}
             <span style={{ color: B, fontWeight: 600 }}>Illustrator</span>
-            {" "}— all self-taught. That journey sharpened my eye: when something is visually off, when a flow feels awkward, when a layout doesn't serve the user. Those same instincts carry directly into QA.
+            {" "}all self-taught. That journey sharpened my eye: when something is visually off, when a flow feels awkward, when a layout doesn't serve the user. Those same instincts carry directly into QA.
           </p>
 
           <p ref={p3Ref} className="sr-hidden sr-delay-3">

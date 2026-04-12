@@ -262,7 +262,7 @@ const GlassBox = () => {
       {/* ── Bottom layer: syntax-highlighted source ── */}
       <div className={`gb-code${jitter ? " gb-jitter" : ""}`}>
         <pre className="gb-pre">
-          <GbLine><Cm c="# // glass_box.py — QA Component Lab" /></GbLine>
+          <GbLine><Cm c="# // glass_box.py | QA Component Lab" /></GbLine>
           <GbLine><Cm c="# Move cursor to X-ray · Click to run diagnostic" /></GbLine>
           <GbLine>&nbsp;</GbLine>
           <GbLine><Kw c="class " /><Cl c="GlassCard" /><Pu c="(" /><Cl c="Component" /><Pu c="):" /></GbLine>
@@ -275,7 +275,7 @@ const GlassBox = () => {
           <GbLine>{"        "}<Vr c="self" /><Pu c="." /><Vr c="blur   " /><Pu c="= " /><Fn c="max" /><Pu c="(" /><Nm c="0.0" /><Pu c=", " /><Nm c="10.0 " /><Pu c="- " /><Nm c="8.0" /><Pu c=")" /></GbLine>
           <GbLine>&nbsp;</GbLine>
           <GbLine>{"    "}<Kw c="def " /><Fn c="run_diagnostic" /><Pu c="(self) -&gt; " /><Cl c="str" /><Pu c=":" /></GbLine>
-          <GbLine>{"        "}<Kw c="return " /><St c={`f"SCAN OK — {self.blur:.1f}px blur — {self.cursor}"`} /></GbLine>
+          <GbLine>{"        "}<Kw c="return " /><St c={`f"SCAN OK: {self.blur:.1f}px blur | cursor:{self.cursor}"`} /></GbLine>
         </pre>
       </div>
 
@@ -508,7 +508,7 @@ export default function Index() {
                 <span style={{ color: ACC, animation: "text-glow 3.5s ease-in-out infinite", display: "inline-block" }}>Milrad</span>
               </h1>
               <p style={{ fontSize: "0.9rem", color: TEXT, lineHeight: 1.7, maxWidth: "42ch" }}>
-                Manual QA graduate. Self-taught designer with a precise eye for broken software — catching what automated tools miss.
+                Manual QA graduate. Self-taught designer with a precise eye for broken software, catching what automated tools miss.
               </p>
             </div>
 
@@ -568,11 +568,11 @@ export default function Index() {
               <span style={{ fontSize: "0.67rem", fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.12em" }}>Background</span>
             </div>
             <p style={{ fontSize: "0.92rem", color: TEXT, lineHeight: 1.75, marginBottom: "14px" }}>
-              I'm a <strong style={{ color: BOLD }}>Manual QA graduate</strong> who came to software through design — building skills across{" "}
+              I'm a <strong style={{ color: BOLD }}>Manual QA graduate</strong> who came to software through design, building skills across{" "}
               <strong style={{ color: BOLD }}>Figma, Photoshop, and Illustrator</strong> entirely self-taught. That design background sharpens my eye for what's visually broken, flows that feel wrong, and UX patterns that don't serve the user.
             </p>
             <p style={{ fontSize: "0.92rem", color: TEXT, lineHeight: 1.75 }}>
-              On top of coursework I built <strong style={{ color: BOLD }}>BehemothQA</strong> independently — getting hands-on with <strong style={{ color: BOLD }}>Jira, Postman, GitHub</strong>, and security testing in the process.
+              On top of coursework I built <strong style={{ color: BOLD }}>BehemothQA</strong> independently, getting hands-on with <strong style={{ color: BOLD }}>Jira, Postman, GitHub</strong>, and security testing in the process.
             </p>
             {/* Stats with 3D float animation, staggered */}
             <div style={{ display: "flex", gap: "28px", marginTop: "auto", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.05)", flexWrap: "wrap" }}>
@@ -615,7 +615,7 @@ export default function Index() {
                 <span className="badge" style={{ animation: "float-badge 5s ease-in-out infinite" }}>v2.4</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                <p style={{ fontSize: "0.78rem", color: TEXT, margin: 0 }}>Full-scale Python QA platform — 300+ checks per run</p>
+                <p style={{ fontSize: "0.78rem", color: TEXT, margin: 0 }}>Full-scale Python QA platform. 300+ checks per run</p>
                 <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
                   style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "7px 15px", borderRadius: "8px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.8rem", textDecoration: "none", whiteSpace: "nowrap", transition: "opacity 0.15s, box-shadow 0.15s", flexShrink: 0 }}
                   onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 22px rgba(129,140,248,0.55)"; }}
@@ -831,7 +831,7 @@ export default function Index() {
                 <h2 style={{ fontWeight: 900, fontSize: "clamp(1.7rem,4vw,2.5rem)", color: BOLD, letterSpacing: "-0.04em", lineHeight: 1, marginBottom: "8px" }}>
                   Let's<span style={{ color: ACC }}> work</span> together.
                 </h2>
-                <p style={{ fontSize: "0.87rem", color: TEXT }}>Submit a message — I respond to every serious inquiry.</p>
+                <p style={{ fontSize: "0.87rem", color: TEXT }}>Submit a message. I respond to every serious inquiry.</p>
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
                 <BtnGhost href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" external>LinkedIn</BtnGhost>
@@ -843,7 +843,7 @@ export default function Index() {
 
           {/* ══ FOOTER ════════════════════════════════════════════════════════ */}
           <BC col="span 3" innerStyle={{ padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", background: "rgba(255,255,255,0.012)" }}>
-            <span style={{ fontSize: "0.75rem", color: MUTED }}>© 2025 Johnatan Milrad — QA Engineer</span>
+            <span style={{ fontSize: "0.75rem", color: MUTED }}>© 2025 Johnatan Milrad · QA Engineer</span>
             <span style={{ fontSize: "0.72rem", color: "rgba(248,250,252,0.1)", letterSpacing: "0.02em" }}>Built with precision.</span>
           </BC>
 

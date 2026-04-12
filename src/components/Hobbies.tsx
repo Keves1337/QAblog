@@ -17,11 +17,11 @@ interface HobbyData {
 
 const hobbies: HobbyData[] = [
   { title: "DJing_&_Music",       icon: Headphones, animClass: "dj-animation",     accent: C, delay: "sr-delay-1",
-    desc: "Crafting sonic experiences with Cubase, FL Studio, and Ableton. Music production trains the ear for subtle imperfections — a mindset that carries directly into QA." },
+    desc: "Crafting sonic experiences with Cubase, FL Studio, and Ableton. Music production trains the ear for subtle imperfections, a mindset that carries directly into QA." },
   { title: "Design_&_Creativity", icon: Palette,    animClass: "design-animation", accent: V, delay: "sr-delay-2",
     desc: "Bringing ideas to life through Figma, Photoshop, and Illustrator. A strong design sense helps evaluate UX quality and catch visual regressions others miss." },
   { title: "Motorcycle_Riding",   icon: Bike,       animClass: "bike-animation",   accent: C, delay: "sr-delay-3",
-    desc: "Freedom on two wheels. Riding demands constant situational awareness and fast decisions — skills that translate well to high-pressure testing environments." },
+    desc: "Freedom on two wheels. Riding demands constant situational awareness and fast decisions, skills that translate well to high-pressure testing environments." },
   { title: "Competitive_Gaming",  icon: Gamepad2,   animClass: "gaming-animation", accent: V, delay: "sr-delay-4",
     desc: "Strategic thinking, pattern recognition, rapid iteration. Every session practices identifying edge cases, reproducing issues, and communicating clearly under pressure." },
 ];
