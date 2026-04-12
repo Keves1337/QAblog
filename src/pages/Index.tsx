@@ -356,8 +356,9 @@ export default function Index() {
   }, []);
 
   /* ── Button helpers ── */
-  const BtnPrimary = ({ href, children }: { href?: string; children: React.ReactNode }) => (
-    <a href={href} style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "10px 22px", borderRadius: "9px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", transition: "opacity 0.15s, box-shadow 0.15s" }}
+  const BtnPrimary = ({ href, children, external }: { href?: string; children: React.ReactNode; external?: boolean }) => (
+    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}
+      style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "10px 22px", borderRadius: "9px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", transition: "opacity 0.15s, box-shadow 0.15s" }}
       onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 28px rgba(129,140,248,0.6)"; }}
       onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
     >{children}</a>
@@ -545,20 +546,20 @@ export default function Index() {
               <OrbitRing size={60} speed="14s" opacity={0.12} dotColor="#67e8f9" />
             </div>
 
-            <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "5px" }}>
-                  <span className="live-dot" />
-                  <span style={{ fontWeight: 900, fontSize: "1.1rem", color: BOLD, letterSpacing: "-0.03em" }}>BehemothQA</span>
-                  <span className="badge" style={{ animation: "float-badge 5s ease-in-out infinite" }}>v2.4</span>
-                </div>
-                <p style={{ fontSize: "0.78rem", color: TEXT }}>Full-scale Python QA platform — 300+ checks per run</p>
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "5px" }}>
+                <span className="live-dot" />
+                <span style={{ fontWeight: 900, fontSize: "1.1rem", color: BOLD, letterSpacing: "-0.03em" }}>BehemothQA</span>
+                <span className="badge" style={{ animation: "float-badge 5s ease-in-out infinite" }}>v2.4</span>
               </div>
-              <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "7px 15px", borderRadius: "8px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.8rem", textDecoration: "none", transition: "opacity 0.15s, box-shadow 0.15s" }}
-                onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 22px rgba(129,140,248,0.55)"; }}
-                onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
-              >Launch App <ExternalLink style={{ width: "11px", height: "11px" }} /></a>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                <p style={{ fontSize: "0.78rem", color: TEXT, margin: 0 }}>Full-scale Python QA platform — 300+ checks per run</p>
+                <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "7px 15px", borderRadius: "8px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.8rem", textDecoration: "none", whiteSpace: "nowrap", transition: "opacity 0.15s, box-shadow 0.15s", flexShrink: 0 }}
+                  onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 22px rgba(129,140,248,0.55)"; }}
+                  onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
+                >Launch App <ExternalLink style={{ width: "11px", height: "11px" }} /></a>
+              </div>
             </div>
 
             <div style={{ position: "relative", zIndex: 1, flex: 1 }}>
@@ -781,7 +782,7 @@ export default function Index() {
               </div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
                 <BtnGhost href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" external>LinkedIn</BtnGhost>
-                <BtnPrimary href="https://settings-qa-ai.replit.app">BehemothQA <ExternalLink style={{ width: "12px", height: "12px" }} /></BtnPrimary>
+                <BtnPrimary href="https://settings-qa-ai.replit.app" external>BehemothQA <ExternalLink style={{ width: "12px", height: "12px" }} /></BtnPrimary>
               </div>
             </div>
             <ContactForm />
