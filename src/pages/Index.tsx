@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ExternalLink, Mail, Phone, MapPin, Send, Shield, Zap, Eye, ChevronDown, ArrowUpRight } from "lucide-react";
 
 /* ─── Palette ───────────────────────────────────────────────────────────── */
@@ -298,64 +298,54 @@ const GlassBox = () => {
   );
 };
 
-/* ─── Cert flip card ─────────────────────────────────────────────────────── */
-const CERT_QA = {
-  icon: <Shield style={{ width: "18px", height: "18px", color: ACC }} strokeWidth={1.5} />,
-  iconBg: { background: A_DIM, border: "1px solid rgba(129,140,248,0.2)" },
-  title: "Manual QA Engineer",
-  label: "QA Course · Graduate",
-  labelColor: ACC,
-  desc: "Full manual testing lifecycle: test case design, bug reporting, regression testing, Jira, web and mobile platforms.",
-  hint: "Hover or click to flip",
-};
-const CERT_UX = {
-  icon: <Eye style={{ width: "18px", height: "18px", color: "#a78bfa" }} strokeWidth={1.5} />,
-  iconBg: { background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.22)" },
-  title: "UI/UX Designer",
-  label: "Self-taught · Graduate",
-  labelColor: "#a78bfa",
-  desc: "Figma, Photoshop, Illustrator. Designing interfaces with a tester's instinct for what breaks, and the precision to fix it.",
-  hint: "Click to lock / hover to peek",
+/* ─── Cert 3D flip card ──────────────────────────────────────────────────── */
+const FACE: React.CSSProperties = {
+  position: "absolute", inset: 0,
+  backfaceVisibility: "hidden",
+  WebkitBackfaceVisibility: "hidden" as React.CSSProperties["WebkitBackfaceVisibility"],
+  display: "flex", gap: "12px", alignItems: "flex-start",
 };
 
 const CertFlipCard = () => {
-  const [hovered, setHovered] = useState(false);
-  const [locked,  setLocked]  = useState(false);
+  const [flipped, setFlipped] = useState(false);
   const [quick,   setQuick]   = useState(false);
-  const showUX = hovered || locked;
-  const cert = showUX ? CERT_UX : CERT_QA;
-  const dur  = quick ? 0.17 : 0.45;
 
   return (
     <div
-      style={{ cursor: "pointer", userSelect: "none", height: "100%" }}
-      onMouseEnter={() => { setQuick(false); setHovered(true); }}
-      onMouseLeave={() => { setQuick(false); setHovered(false); }}
-      onClick={() => { setQuick(true); setLocked(l => !l); }}
+      style={{ flex: 1, minHeight: "130px", perspective: "900px", cursor: "pointer", userSelect: "none" }}
+      onMouseEnter={() => { setQuick(false); setFlipped(true); }}
+      onMouseLeave={() => { setQuick(false); setFlipped(false); }}
+      onClick={() => { setQuick(true); setFlipped(f => !f); }}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={showUX ? "ux" : "qa"}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: dur, ease: "easeOut" }}
-          style={{ display: "flex", flexDirection: "column", gap: "10px", height: "100%" }}
-        >
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-            <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", ...cert.iconBg }}>
-              {cert.icon}
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: "0.95rem", color: BOLD, marginBottom: "4px", letterSpacing: "-0.01em" }}>{cert.title}</div>
-              <div style={{ fontSize: "0.75rem", color: cert.labelColor, marginBottom: "10px", fontWeight: 600 }}>{cert.label}</div>
-              <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65, margin: 0 }}>{cert.desc}</p>
-            </div>
+      <motion.div
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={{ duration: quick ? 0.22 : 0.72, ease: [0.4, 0, 0.2, 1] }}
+        style={{ width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d" }}
+      >
+        {/* ── FRONT: Manual QA Engineer ── */}
+        <div style={FACE}>
+          <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", background: A_DIM, border: "1px solid rgba(129,140,248,0.2)" }}>
+            <Shield style={{ width: "18px", height: "18px", color: ACC }} strokeWidth={1.5} />
           </div>
-          <div style={{ marginTop: "auto", fontSize: "0.63rem", color: MUTED, letterSpacing: "0.04em" }}>
-            {locked ? "Click to flip back" : cert.hint}
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "0.95rem", color: BOLD, marginBottom: "4px", letterSpacing: "-0.01em" }}>Manual QA Engineer</div>
+            <div style={{ fontSize: "0.75rem", color: ACC, marginBottom: "10px", fontWeight: 600 }}>QA Course · Graduate</div>
+            <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65, margin: 0 }}>Full manual testing lifecycle: test case design, bug reporting, regression testing, Jira, web and mobile platforms.</p>
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+
+        {/* ── BACK: UI/UX Designer ── */}
+        <div style={{ ...FACE, transform: "rotateY(180deg)" }}>
+          <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.22)" }}>
+            <Eye style={{ width: "18px", height: "18px", color: "#a78bfa" }} strokeWidth={1.5} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "0.95rem", color: BOLD, marginBottom: "4px", letterSpacing: "-0.01em" }}>UI/UX Designer</div>
+            <div style={{ fontSize: "0.75rem", color: "#a78bfa", marginBottom: "10px", fontWeight: 600 }}>Self-taught · Graduate</div>
+            <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65, margin: 0 }}>Figma, Photoshop, Illustrator. Designing interfaces with a tester's instinct for what breaks, and the precision to fix it.</p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
@@ -658,7 +648,7 @@ export default function Index() {
           </BC>
 
           {/* ══ CERT ══════════════════════════════════════════════════════════ */}
-          <BC innerStyle={{ background: "rgba(129,140,248,0.04)", border: "1px solid rgba(129,140,248,0.12)", display: "flex", flexDirection: "column" }}>
+          <BC minH="160px" innerStyle={{ background: "rgba(129,140,248,0.04)", border: "1px solid rgba(129,140,248,0.12)", display: "flex", flexDirection: "column", overflow: "visible" }}>
             <CertFlipCard />
           </BC>
 
