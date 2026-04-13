@@ -341,7 +341,7 @@ const CertFlipCard = () => {
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: "0.95rem", color: BOLD, marginBottom: "4px", letterSpacing: "-0.01em" }}>UI/UX Designer</div>
-            <div style={{ fontSize: "0.75rem", color: "#a78bfa", marginBottom: "10px", fontWeight: 600 }}>Graduate UI/UX Course</div>
+            <div style={{ fontSize: "0.75rem", color: "#a78bfa", marginBottom: "10px", fontWeight: 600 }}>UI/UX Prodigy</div>
             <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65, margin: 0 }}>Figma, Photoshop, Illustrator. Designing interfaces with a tester's instinct for what breaks, and the precision to fix it.</p>
           </div>
         </div>
