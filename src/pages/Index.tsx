@@ -110,7 +110,7 @@ const ContactForm = () => {
   );
   return (
     <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
+      <div className="contact-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
         <div>
           <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Type</div>
           <div style={{ position: "relative" }}>
@@ -129,7 +129,7 @@ const ContactForm = () => {
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Message</div>
         <textarea name="message" rows={3} placeholder="Tell me more…" className="noir-input" />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+      <div className="contact-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
         <div>
           <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Name</div>
           <input name="name" type="text" placeholder="Your name" className="noir-input" />
@@ -565,7 +565,7 @@ export default function Index() {
               On top of coursework I built <strong style={{ color: BOLD }}>BehemothQA</strong> independently, getting hands-on with <strong style={{ color: BOLD }}>Jira, Postman, GitHub</strong>, and security testing in the process.
             </p>
             {/* Stats with 3D float animation, staggered */}
-            <div style={{ display: "flex", gap: "28px", marginTop: "auto", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.05)", flexWrap: "wrap" }}>
+            <div className="stats-row" style={{ display: "flex", gap: "28px", marginTop: "auto", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.05)", flexWrap: "wrap" }}>
               {[
                 { n: "300+", l: "checks / run",  c: ACC,     delay: "0s"    },
                 { n: "6",    l: "attack modules", c: "#67e8f9", delay: "0.4s" },
@@ -842,35 +842,67 @@ export default function Index() {
 
       <style>{`
         @media (max-width: 767px) {
-          /* Nav: compact, hide text links */
+          /* ── Nav: hide text section links, keep logo + BehemothQA ── */
           nav { padding: 0 16px !important; }
           .nav-links a[href^="#"] { display: none !important; }
 
-          /* Grid → single column, full-width cards */
+          /* ── Bento grid → single column ── */
           main > div {
             grid-template-columns: 1fr !important;
             gap: 8px !important;
             padding: 10px 10px 40px !important;
+            overflow-x: hidden !important;
           }
+
+          /* Critical: min-width:0 prevents grid items from growing past 1fr */
           main > div > div {
             grid-column: span 1 !important;
             grid-row:    span 1 !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
           }
 
-          /* Hide the portrait photo — on mobile it just looks like a dark empty block */
+          /* Bento card inner also must not overflow */
+          .bento-card {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
+
+          /* Photo: hidden on portrait mobile */
           .photo-bc { display: none !important; }
 
-          /* Hero h1 */
+          /* Hero h1 scale down */
           h1 { font-size: clamp(2rem, 9vw, 2.8rem) !important; }
 
-          /* IDE: allow horizontal scroll so code doesn't break layout */
+          /* All text: wrap safely */
+          p, h2, h3, span, div { overflow-wrap: break-word; word-break: break-word; }
+
+          /* IDE: horizontal scroll so long code lines don't break layout */
           .ide-body { overflow-x: auto !important; }
           .ide-body pre { min-width: max-content; }
 
-          /* Hobbies: 4-col → 2×2 */
+          /* Stats row: tighter gap on small screen */
+          .stats-row { gap: 18px !important; }
+
+          /* Marquee mask: shorter fades on narrow screens */
+          .marquee-mask {
+            -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%) !important;
+            mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%) !important;
+          }
+
+          /* Hobbies: 4 col → 2×2 */
           .hobbies-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .hobbies-grid > div:nth-child(2n)   { border-right: none !important; }
-          .hobbies-grid > div:nth-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.055) !important; }
+          /* Remove right border from right-column cells */
+          .hobbies-grid > div:nth-child(2n) { border-right: none !important; }
+          /* Row separator comes from the borderTop already on rows 3&4 — no double border needed */
+
+          /* Contact form: full-width on mobile */
+          .contact-form-grid { grid-template-columns: 1fr !important; }
+
+          /* GlassBox: usable on mobile without the hover ring */
+          .gb-ui { padding: 18px 20px !important; }
+          .gb-pre { font-size: 9.5px !important; }
         }
         a { -webkit-tap-highlight-color: transparent; }
       `}</style>
