@@ -430,21 +430,26 @@ export default function Index() {
       <div className="vignette" aria-hidden />
       <AmbientBg />
 
-      {/* ── Minimal nav ── */}
+      {/* ── Nav ──────────────────────────────────────────────────────────── */}
+      {/* Desktop: Logo | section-links (center) | BehemothQA (right)      */}
+      {/* Mobile:  row1 Logo | BehemothQA   row2 section-links (full width) */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 32px", height: "54px",
+        display: "flex", alignItems: "center", flexWrap: "wrap",
+        justifyContent: "space-between",
+        padding: "0 32px", minHeight: "54px",
         background: "rgba(5,5,5,0.75)", backdropFilter: "blur(20px) saturate(1.4)",
         borderBottom: "1px solid rgba(255,255,255,0.045)",
       }}>
+        {/* Logo */}
         <motion.span initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }}
-          style={{ fontWeight: 900, fontSize: "0.95rem", color: BOLD, letterSpacing: "-0.03em" }}>
+          style={{ fontWeight: 900, fontSize: "0.95rem", color: BOLD, letterSpacing: "-0.03em", lineHeight: "54px" }}>
           Johnatan<span style={{ color: ACC }}>.</span>
         </motion.span>
-        <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }}
-          className="nav-links"
-          style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+        {/* Section links — center on desktop, second row on mobile */}
+        <div className="nav-section-links"
+          style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {["About","Projects","Skills","Contact"].map(l => (
             <a key={l} href={`#${l.toLowerCase()}`}
               style={{ fontSize: "0.8rem", color: MUTED, textDecoration: "none", padding: "4px 10px", borderRadius: "6px", transition: "color 0.15s, background 0.15s" }}
@@ -452,12 +457,15 @@ export default function Index() {
               onMouseLeave={e => { const el = e.currentTarget; el.style.color = MUTED; el.style.background = "transparent"; }}
             >{l}</a>
           ))}
-          <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", borderRadius: "8px", background: A_DIM, border: "1px solid rgba(129,140,248,0.22)", color: ACC, fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", transition: "background 0.15s" }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(129,140,248,0.18)")}
-            onMouseLeave={e => (e.currentTarget.style.background = A_DIM)}
-          >BehemothQA <ExternalLink style={{ width: "10px", height: "10px" }} /></a>
-        </motion.div>
+        </div>
+
+        {/* BehemothQA — right on desktop, right of row 1 on mobile */}
+        <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+          className="nav-behemoth"
+          style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", borderRadius: "8px", background: A_DIM, border: "1px solid rgba(129,140,248,0.22)", color: ACC, fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", transition: "background 0.15s", flexShrink: 0 }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(129,140,248,0.18)")}
+          onMouseLeave={e => (e.currentTarget.style.background = A_DIM)}
+        >BehemothQA <ExternalLink style={{ width: "10px", height: "10px" }} /></a>
       </nav>
 
       {/* ── Bento grid — perspective wrapper gives entrance cards a 3D origin ── */}
@@ -842,19 +850,40 @@ export default function Index() {
 
       <style>{`
         @media (max-width: 767px) {
-          /* ── Nav: hide text section links, keep logo + BehemothQA ── */
-          nav { padding: 0 16px !important; }
-          .nav-links a[href^="#"] { display: none !important; }
 
-          /* ── Bento grid → single column ── */
+          /* ━━ NAV: 2-row on mobile ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+          /* Row 1: Logo (left) | BehemothQA (right)                         */
+          /* Row 2: About · Projects · Skills · Contact (evenly spread)       */
+          nav {
+            padding: 0 16px !important;
+            min-height: 54px !important;
+            align-content: center !important;
+          }
+          /* Push section links to their own row */
+          .nav-section-links {
+            order: 10 !important;
+            flex-basis: 100% !important;
+            justify-content: space-around !important;
+            padding: 8px 0 10px !important;
+            border-top: 1px solid rgba(255,255,255,0.05) !important;
+          }
+          .nav-section-links a {
+            font-size: 0.75rem !important;
+            padding: 5px 8px !important;
+          }
+
+          /* Main: push down to clear 2-row nav */
+          main { padding-top: 108px !important; }
+
+          /* ━━ BENTO GRID → single column ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
           main > div {
             grid-template-columns: 1fr !important;
-            gap: 8px !important;
-            padding: 10px 10px 40px !important;
+            gap: 10px !important;
+            padding: 12px 12px 48px !important;
             overflow-x: hidden !important;
           }
 
-          /* Critical: min-width:0 prevents grid items from growing past 1fr */
+          /* Critical: min-width:0 stops grid items overflowing their 1fr track */
           main > div > div {
             grid-column: span 1 !important;
             grid-row:    span 1 !important;
@@ -862,46 +891,43 @@ export default function Index() {
             max-width: 100% !important;
           }
 
-          /* Bento card inner also must not overflow */
+          /* Bento card inner: clamp to card width */
           .bento-card {
             min-width: 0 !important;
             max-width: 100% !important;
             overflow: hidden !important;
           }
 
-          /* Photo: hidden on portrait mobile */
-          .photo-bc { display: none !important; }
+          /* ━━ HERO PHOTO: show, shorter height on mobile ━━━━━━━━━━━━━━━━━━━ */
+          .photo-bc { display: flex !important; }
+          .photo-inner { min-height: 240px !important; }
 
-          /* Hero h1 scale down */
+          /* ━━ TYPOGRAPHY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
           h1 { font-size: clamp(2rem, 9vw, 2.8rem) !important; }
+          p, h2, h3 { overflow-wrap: break-word; word-break: break-word; }
 
-          /* All text: wrap safely */
-          p, h2, h3, span, div { overflow-wrap: break-word; word-break: break-word; }
-
-          /* IDE: horizontal scroll so long code lines don't break layout */
+          /* ━━ IDE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
           .ide-body { overflow-x: auto !important; }
           .ide-body pre { min-width: max-content; }
 
-          /* Stats row: tighter gap on small screen */
-          .stats-row { gap: 18px !important; }
+          /* ━━ BACKGROUND STATS ROW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+          .stats-row { gap: 20px !important; flex-wrap: wrap !important; }
 
-          /* Marquee mask: shorter fades on narrow screens */
+          /* ━━ SKILLS MARQUEE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
           .marquee-mask {
-            -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%) !important;
-            mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%) !important;
+            -webkit-mask-image: linear-gradient(90deg,transparent 0%,black 5%,black 95%,transparent 100%) !important;
+            mask-image: linear-gradient(90deg,transparent 0%,black 5%,black 95%,transparent 100%) !important;
           }
 
-          /* Hobbies: 4 col → 2×2 */
-          .hobbies-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          /* Remove right border from right-column cells */
+          /* ━━ HOBBIES: 4-col → 2×2 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+          .hobbies-grid { grid-template-columns: repeat(2,1fr) !important; }
           .hobbies-grid > div:nth-child(2n) { border-right: none !important; }
-          /* Row separator comes from the borderTop already on rows 3&4 — no double border needed */
 
-          /* Contact form: full-width on mobile */
+          /* ━━ CONTACT FORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
           .contact-form-grid { grid-template-columns: 1fr !important; }
 
-          /* GlassBox: usable on mobile without the hover ring */
-          .gb-ui { padding: 18px 20px !important; }
+          /* ━━ GLASSBOX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+          .gb-ui  { padding: 18px 20px !important; }
           .gb-pre { font-size: 9.5px !important; }
         }
         a { -webkit-tap-highlight-color: transparent; }
