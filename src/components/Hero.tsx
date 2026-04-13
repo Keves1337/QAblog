@@ -278,12 +278,12 @@ const Hero = () => {
           </h1>
 
           <p id="hero-sub">
-            Johnatan Milrad, Manual QA graduate and UI/UX graduate combining a designer's
+            Johnatan Milrad, Manual QA graduate with UI/UX knowledge combining a designer's
             instinct with systematic testing to catch what others miss.
           </p>
 
           <div id="hero-tags">
-            {["// Manual QA Graduate", "// Manual Testing", "// Bug Reporting", "// Test Planning", "// UI/UX Graduate"].map(t => (
+            {["// Manual QA Graduate", "// Manual Testing", "// Bug Reporting", "// Test Planning", "// UI/UX Knowledge"].map(t => (
               <span key={t} className="hero-tag">{t}</span>
             ))}
           </div>
