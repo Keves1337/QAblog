@@ -37,14 +37,14 @@ const useIsMobile = () => {
  *   inner  <div.bento-card.tilt-target>  — visual styling + interactive 3D tilt
  */
 const BC = ({
-  children, innerStyle, col, row, minH, className = "",
+  children, innerStyle, col, row, minH, className = "", id,
 }: {
   children: React.ReactNode;
   innerStyle?: React.CSSProperties;
   col?: string; row?: string; minH?: string;
-  className?: string;
+  className?: string; id?: string;
 }) => (
-  <motion.div variants={cardV}
+  <motion.div id={id} variants={cardV}
     style={{ gridColumn: col, gridRow: row, minHeight: minH, display: "flex", flexDirection: "column" }}
   >
     <div className={`bento-card tilt-target ${className}`}
@@ -452,6 +452,7 @@ export default function Index() {
           style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {["About","Projects","Skills","Contact"].map(l => (
             <a key={l} href={`#${l.toLowerCase()}`}
+              onClick={e => { e.preventDefault(); document.getElementById(l.toLowerCase())?.scrollIntoView({ behavior: "smooth" }); }}
               style={{ fontSize: "0.8rem", color: MUTED, textDecoration: "none", padding: "4px 10px", borderRadius: "6px", transition: "color 0.15s, background 0.15s" }}
               onMouseEnter={e => { const el = e.currentTarget; el.style.color = BOLD; el.style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={e => { const el = e.currentTarget; el.style.color = MUTED; el.style.background = "transparent"; }}
