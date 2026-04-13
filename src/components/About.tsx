@@ -43,7 +43,7 @@ const About = () => {
             <span style={{ color: B, fontWeight: 600 }}>Figma</span>,{" "}
             <span style={{ color: B, fontWeight: 600 }}>Photoshop</span>, and{" "}
             <span style={{ color: B, fontWeight: 600 }}>Illustrator</span>
-            {" "}backed by UI/UX knowledge. That journey sharpened my eye: when something is visually off, when a flow feels awkward, when a layout doesn't serve the user. Those same instincts carry directly into QA.
+            {" "}shaped by a UI/UX sensibility. That journey sharpened my eye: when something is visually off, when a flow feels awkward, when a layout doesn't serve the user. Those same instincts carry directly into QA.
           </p>
 
           <p ref={p3Ref} className="sr-hidden sr-delay-3">
