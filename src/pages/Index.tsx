@@ -506,7 +506,7 @@ export default function Index() {
                 <span style={{ color: ACC, animation: "text-glow 3.5s ease-in-out infinite", display: "inline-block" }}>Milrad</span>
               </h1>
               <p style={{ fontSize: "0.9rem", color: TEXT, lineHeight: 1.7, maxWidth: "42ch" }}>
-                Manual QA graduate. Self-taught designer with a precise eye for broken software, catching what automated tools miss.
+                Manual QA graduate and UI/UX graduate with a precise eye for broken software, catching what automated tools miss.
               </p>
             </div>
 
@@ -567,7 +567,7 @@ export default function Index() {
             </div>
             <p style={{ fontSize: "0.92rem", color: TEXT, lineHeight: 1.75, marginBottom: "14px" }}>
               I'm a <strong style={{ color: BOLD }}>Manual QA graduate</strong> who came to software through design, building skills across{" "}
-              <strong style={{ color: BOLD }}>Figma, Photoshop, and Illustrator</strong> entirely self-taught. That design background sharpens my eye for what's visually broken, flows that feel wrong, and UX patterns that don't serve the user.
+              <strong style={{ color: BOLD }}>Figma, Photoshop, and Illustrator</strong> as a UI/UX graduate. That design background sharpens my eye for what's visually broken, flows that feel wrong, and UX patterns that don't serve the user.
             </p>
             <p style={{ fontSize: "0.92rem", color: TEXT, lineHeight: 1.75 }}>
               On top of coursework I built <strong style={{ color: BOLD }}>BehemothQA</strong> independently, getting hands-on with <strong style={{ color: BOLD }}>Jira, Postman, GitHub</strong>, and security testing in the process.
