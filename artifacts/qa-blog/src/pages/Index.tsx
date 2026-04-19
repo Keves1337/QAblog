@@ -345,24 +345,41 @@ export default function Index() {
   const isHoveredRef      = useRef(false);
   const webglOk = !isMobile && typeof window !== "undefined" && hasWebGL();
 
-  /* ── Magnetic cursor ── */
+  /* ── Magnetic cursor (true magnetic attraction) ── */
   const cursorX = useMotionValue(-200);
   const cursorY = useMotionValue(-200);
   const cursorScale = useMotionValue(1);
   const springX = useSpring(cursorX, { stiffness: 200, damping: 26 });
   const springY = useSpring(cursorY, { stiffness: 200, damping: 26 });
   const sScale  = useSpring(cursorScale, { stiffness: 300, damping: 30 });
+  const magnetElRef = useRef<Element | null>(null);
 
   useEffect(() => {
     if (isMobile) return;
     const move = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      const magEl = magnetElRef.current;
+      if (magEl) {
+        const r = magEl.getBoundingClientRect();
+        const cx = r.left + r.width  / 2;
+        const cy = r.top  + r.height / 2;
+        // Pull cursor toward element center (30% attraction strength)
+        cursorX.set(e.clientX + (cx - e.clientX) * 0.30);
+        cursorY.set(e.clientY + (cy - e.clientY) * 0.30);
+      } else {
+        cursorX.set(e.clientX);
+        cursorY.set(e.clientY);
+      }
     };
     const over = (e: MouseEvent) => {
       const t = e.target as Element;
-      if (t.closest("a,button,.mag-target")) { cursorScale.set(2.2); }
-      else { cursorScale.set(1); }
+      const el = t.closest("a,button,.mag-target");
+      if (el) {
+        magnetElRef.current = el;
+        cursorScale.set(2.2);
+      } else {
+        magnetElRef.current = null;
+        cursorScale.set(1);
+      }
     };
     window.addEventListener("mousemove", move,  { passive: true });
     window.addEventListener("mouseover", over,   { passive: true });
@@ -372,13 +389,14 @@ export default function Index() {
     };
   }, [isMobile, cursorX, cursorY, cursorScale]);
 
-  /* ── Wire isHoveredRef to bento project cards (monolith reacts to hover) ── */
+  /* ── Wire isHoveredRef to project section links only (monolith reacts) ── */
   useEffect(() => {
     if (!webglOk) return;
     const onEnter = () => { isHoveredRef.current = true; };
     const onLeave = () => { isHoveredRef.current = false; };
+    // Narrowly scope to project-specific links to match interaction spec
     const targets = document.querySelectorAll<HTMLElement>(
-      '#projects .group, a[href*="behemothqa"], a[href*="github"], .bento-card'
+      '#projects a, #projects button, a[href*="behemothqa"], a[href*="github"][href*="Keves"]'
     );
     targets.forEach(el => {
       el.addEventListener("mouseenter", onEnter);
@@ -423,11 +441,14 @@ export default function Index() {
   useEffect(() => {
     if (isMobile) return;
 
+    // Collect all locally created tweens so we can kill only ours on cleanup
+    const localTweens: gsap.core.Tween[] = [];
+
     const words = document.querySelectorAll<HTMLElement>(".parallax-word");
     words.forEach((el, i) => {
       const sectionTrigger = el.closest("section") ?? el.closest("[id]") ?? el;
       // y-parallax drift
-      gsap.fromTo(el,
+      localTweens.push(gsap.fromTo(el,
         { y: 0 },
         {
           y: -90 - i * 20,
@@ -439,9 +460,9 @@ export default function Index() {
             scrub: 1.5,
           },
         },
-      );
+      ));
       // clip-path mask reveal — left-to-right unmasking on scroll-in
-      gsap.fromTo(el,
+      localTweens.push(gsap.fromTo(el,
         { clipPath: "inset(0 100% 0 0)" },
         {
           clipPath: "inset(0 0% 0 0)",
@@ -453,12 +474,12 @@ export default function Index() {
             scrub: 0.8,
           },
         },
-      );
+      ));
     });
 
-    const sections = document.querySelectorAll<HTMLElement>(".gsap-reveal");
-    sections.forEach(el => {
-      gsap.fromTo(el,
+    const revealEls = document.querySelectorAll<HTMLElement>(".gsap-reveal");
+    revealEls.forEach(el => {
+      localTweens.push(gsap.fromTo(el,
         { opacity: 0, y: 40 },
         {
           opacity: 1, y: 0,
@@ -470,10 +491,16 @@ export default function Index() {
             toggleActions: "play none none none",
           },
         },
-      );
+      ));
     });
 
-    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+    // Only kill locally created triggers — not global ones from other effects
+    return () => {
+      localTweens.forEach(tw => {
+        tw.scrollTrigger?.kill();
+        tw.kill();
+      });
+    };
   }, [isMobile]);
 
   /* ── 3D tilt on bento cards ── */
