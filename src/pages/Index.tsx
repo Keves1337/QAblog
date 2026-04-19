@@ -471,40 +471,8 @@ export default function Page() {
             </div>
           </div>
 
-          {/* ── RIGHT PANEL 48% — desktop only ── */}
-          {!isMobile && (
-            <div style={{
-              width:"48%", display:"flex", flexDirection:"column",
-              padding:"88px 1.5rem 1.5rem 0.75rem",
-              justifyContent:"space-between",
-            }}>
-              {/* About card */}
-              <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay:0.42, duration:0.55 }}
-                className="lg" style={{ borderRadius:"1.5rem", padding:"1.5rem",
-                  background:"rgba(0,0,0,0.45)" }}
-              >
-                <p style={{ fontSize:"0.85rem", fontWeight:500, color:W, marginBottom:"6px",
-                  fontFamily:"'Poppins',sans-serif" }}>Johnatan Milrad</p>
-                <p style={{ fontSize:"0.75rem", color:W80, lineHeight:1.6, margin:0 }}>
-                  Manual QA Engineer with UI/UX design expertise. Building precise test processes that catch what automated tools miss.
-                </p>
-              </motion.div>
-
-              {/* Scroll indicator */}
-              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
-                transition={{ delay:1.1, duration:0.6 }}
-                style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
-                  paddingTop:"0.5rem", pointerEvents:"none" }}
-              >
-                <span style={{ fontSize:"0.58rem", fontWeight:600, color:W25,
-                  letterSpacing:"0.2em", textTransform:"uppercase" }}>scroll</span>
-                <motion.div animate={{ y:[0,8,0] }} transition={{ repeat:Infinity, duration:1.6, ease:"easeInOut" }}
-                  style={{ width:"1px", height:"28px", background:`linear-gradient(to bottom,${W50},transparent)` }}
-                />
-              </motion.div>
-            </div>
-          )}
+          {/* ── RIGHT PANEL — clean, lets the video breathe ── */}
+          {!isMobile && <div style={{ width:"48%" }} />}
         </section>
 
         {/* ══════════════════════════════════════════════════════════════════
