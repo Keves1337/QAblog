@@ -124,10 +124,10 @@ const IdeBlock = () => (
 <span className="tok-var">results</span>{" "}<span className="tok-op">=</span>{" "}<span className="tok-var">scanner</span>.<span className="tok-fn">run</span>{"(\n"}
 {"  "}<span className="tok-cls">WAFGutPunch</span>{"("}<span className="tok-pm">payload_size</span><span className="tok-op">=</span><span className="tok-str">"130KB"</span>{"),\n"}
 {"  "}<span className="tok-cls">AuthAbyss</span>{"("}<span className="tok-pm">jwt_tokens</span><span className="tok-op">=</span><span className="tok-num">60</span>{"),\n)\n\n"}
-<span className="tok-var">report</span>{" "}<span className="tok-op">=</span>{" "}<span className="tok-var">results</span>.<span className="tok-fn">export_pdf</span>{"(\n"}
+<span className="tok-var">report</span>{" "}<span className="tok-op">=</span>{" "}<span className="tok-var">results</span>.<span className="tok-fn">export_report</span>{"(\n"}
 {"  "}<span className="tok-pm">sections</span><span className="tok-op">=</span>{"["}<span className="tok-str">"security"</span>{", "}<span className="tok-str">"load"</span>{", "}<span className="tok-str">"ui_ux"</span>{"]\n)\n\n"}
 <span className="tok-fn">print</span>{"("}<span className="tok-str">f"Scan done: {"{"}<span className="tok-var">results</span>.<span className="tok-var">total_checks</span>{"}"} checks"</span>{")\n"}
-<span className="tok-cm"># Scan done: 300+ checks</span><span className="ide-cursor"/>
+<span className="tok-cm"># Scan done: 1500+ tests</span><span className="ide-cursor"/>
       </pre>
     </div>
   </div>
@@ -293,7 +293,7 @@ export default function Page() {
           </span>
           {!isMobile && (
             <div style={{ display:"flex", gap:"4px" }}>
-              {["About","Projects","Skills","Contact"].map(l => (
+              {["About","Projects","Skills"].map(l => (
                 <a key={l} href={`#${l.toLowerCase()}`} onClick={scrollTo(l.toLowerCase())}
                   style={{ fontSize:"0.8rem", color:W50, textDecoration:"none", padding:"4px 10px",
                     borderRadius:"6px", transition:"color 0.15s" }}
@@ -473,47 +473,16 @@ export default function Page() {
                 className="lg" style={{ borderRadius:"2.5rem", padding:"1.25rem",
                   background:"rgba(0,0,0,0.45)" }}
               >
-                {/* Two side-by-side cards */}
-                <div style={{ display:"flex", gap:"0.75rem", marginBottom:"0.75rem" }}>
-                  <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                    className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
-                      textDecoration:"none", display:"block", transition:"transform 0.2s" }}
-                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                  >
-                    <Shield size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
-                    <div style={{ fontSize:"0.85rem", fontWeight:500, color:W, fontFamily:"'Poppins',sans-serif" }}>BehemothQA</div>
-                    <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>Security platform</div>
-                  </a>
-                  <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
-                    className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
-                      textDecoration:"none", display:"block", transition:"transform 0.2s" }}
-                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                  >
-                    <FileText size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
-                    <div style={{ fontSize:"0.85rem", fontWeight:500, color:W, fontFamily:"'Poppins',sans-serif" }}>Test Reports</div>
-                    <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>QA documentation</div>
-                  </a>
-                </div>
-
-                {/* Bottom card — contact CTA */}
-                <div className="lg" style={{ borderRadius:"1.5rem", padding:"1rem 1.25rem",
-                  display:"flex", alignItems:"center", justifyContent:"space-between", gap:"0.75rem" }}>
-                  <div>
-                    <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
-                      fontFamily:"'Poppins',sans-serif", marginBottom:"3px" }}>Johnatan Milrad</div>
-                    <div style={{ fontSize:"0.72rem", color:W60 }}>QA Engineer + UI/UX Designer</div>
-                  </div>
-                  <a href="#contact" onClick={scrollTo("contact")}
-                    className="lgs" style={{ padding:"7px 16px", borderRadius:"99px",
-                      display:"inline-flex", alignItems:"center", gap:"5px",
-                      color:W, fontSize:"0.75rem", fontWeight:500, textDecoration:"none", flexShrink:0,
-                      transition:"transform 0.2s", fontFamily:"'Poppins',sans-serif" }}
-                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                  >Contact <ArrowRight size={11} /></a>
-                </div>
+                <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                  className="lg" style={{ display:"block", borderRadius:"1.5rem", padding:"1.25rem 1.25rem",
+                    textDecoration:"none", transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.02)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >
+                  <Shield size={22} color={W} style={{ marginBottom:"10px", opacity:0.85 }} />
+                  <div style={{ fontSize:"0.9rem", fontWeight:500, color:W, fontFamily:"'Poppins',sans-serif" }}>BehemothQA</div>
+                  <div style={{ fontSize:"0.74rem", color:W60, marginTop:"4px" }}>Security testing platform</div>
+                </a>
               </motion.div>
 
               {/* Scroll indicator */}
@@ -560,7 +529,7 @@ export default function Page() {
                   <strong style={{ color:W, fontWeight:500 }}>Jira, Postman, GitHub</strong>, and security testing.
                 </p>
                 <div className="reveal-item" style={{ display:"flex", gap:"2.5rem", flexWrap:"wrap", marginBottom:"2rem" }}>
-                  {[{ n:"300+", l:"checks / run" },{ n:"6", l:"attack modules" },{ n:"4", l:"severity tiers" }].map(s => (
+                  {[{ n:"1500+", l:"tests / run" },{ n:"6", l:"attack modules" },{ n:"4", l:"severity tiers" }].map(s => (
                     <div key={s.n}>
                       <div style={{ fontSize:"clamp(1.8rem,3.5vw,2.4rem)", fontWeight:500, color:W,
                         letterSpacing:"-0.04em", lineHeight:1, fontFamily:"'Poppins',sans-serif" }}>{s.n}</div>
@@ -620,10 +589,10 @@ export default function Page() {
                     <span className="badge">v2.4</span>
                   </div>
                   <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
-                    Full scale Python QA platform with 300+ automated security checks per run. Built from scratch with NightMOTH attack modules, WAF bypass, and PDF report generation.
+                    Full scale Python QA platform with over 1500 automated security tests per run. Built from scratch with NightMOTH attack modules, WAF bypass, and detailed report generation.
                   </p>
                   <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
-                    {["Python","Security","DDoS","UI/UX QA","NightMOTH","PDF Reports"].map(t => (
+                    {["Python","Security","DDoS","UI/UX QA","NightMOTH"].map(t => (
                       <span key={t} className="lg-pill tech-tag">{t}</span>
                     ))}
                   </div>
@@ -724,13 +693,10 @@ export default function Page() {
                       <span key={t} className="lg-pill tech-tag">{t}</span>
                     ))}
                   </div>
-                  <a href={`${BASE}/behemothqa-sample-report.pdf`} target="_blank" rel="noopener noreferrer"
-                    className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
-                      padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
-                      fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
-                    onMouseEnter={e => (e.currentTarget.style.color=W)}
-                    onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                  >View Reports <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
+                  <span className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                    padding:"9px 20px", borderRadius:"99px", color:W50, fontWeight:500,
+                    fontSize:"0.82rem", fontStyle:"italic", fontFamily:"'Source Serif 4',serif" }}
+                  >Sample reports coming soon</span>
                 </div>
               </div>
               <div className="proj-visual" style={{ flexShrink:0, width: isMobile ? "100%" : "200px" }}>
