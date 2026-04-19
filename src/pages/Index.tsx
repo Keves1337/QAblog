@@ -407,7 +407,7 @@ export default function Page() {
                   transition={{ delay:0.5, duration:0.5 }}
                   style={{ display:"flex", gap:"12px", flexWrap:"wrap", alignItems:"center" }}
                 >
-                  <a href="#about" onClick={scrollTo("about")}
+                  <a href="#projects" onClick={scrollTo("projects")}
                     className="lgs cta-btn"
                     style={{ display:"inline-flex", alignItems:"center", gap:"10px",
                       padding:"13px 24px", borderRadius:"99px", color:W, fontWeight:500,
