@@ -81,40 +81,46 @@ function Monolith({ scrollProgress, isHovered }: Props) {
     const g    = groupRef.current;
     const m    = meshRef.current;
 
+    // Hover-driven sinusoidal pulse — active across ALL phases
+    const hovPulse = hov ? Math.sin(time * 4.5) * 0.025 : 0;
+    const hovRotY  = hov ? 0.22 : 0;
+
     if (t < 0.28) {
-      // Hero: centered, float
+      // Hero: centered, float + hover shift
       const targetX = hov ? 0.4 : 0;
       g.position.x = THREE.MathUtils.lerp(g.position.x, targetX, 0.06);
-      g.position.y = Math.sin(time * 0.38) * 0.14;
+      g.position.y = Math.sin(time * 0.38) * 0.14 + hovPulse;
       g.rotation.y = THREE.MathUtils.lerp(
         g.rotation.y,
-        Math.sin(time * 0.18) * 0.12 + (hov ? 0.2 : 0),
+        Math.sin(time * 0.18) * 0.12 + hovRotY,
         0.04,
       );
       m.scale.setScalar(THREE.MathUtils.lerp(m.scale.x, 1.0, 0.08));
     } else if (t < 0.5) {
-      // About: shift left, gentle tilt
+      // About: shift left, gentle tilt + hover pulse
       const p = (t - 0.28) / 0.22;
-      g.position.x = THREE.MathUtils.lerp(g.position.x, -1.4 * p, 0.06);
-      g.position.y = Math.sin(time * 0.38) * 0.09;
-      g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, -0.55 * p, 0.06);
+      g.position.x = THREE.MathUtils.lerp(g.position.x, -1.4 * p + (hov ? 0.25 : 0), 0.06);
+      g.position.y = Math.sin(time * 0.38) * 0.09 + hovPulse;
+      g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, -0.55 * p + hovRotY * 0.6, 0.06);
       g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, 0.08 * p, 0.06);
       m.scale.setScalar(THREE.MathUtils.lerp(m.scale.x, 1.0, 0.08));
     } else if (t < 0.74) {
-      // Projects: shatter — monolith scales to nothing
+      // Projects: shatter — hover keeps a ghost spin alive
       const p = (t - 0.5) / 0.24;
       g.position.x = THREE.MathUtils.lerp(g.position.x, 0, 0.05);
-      g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, p * Math.PI * 0.6, 0.06);
+      g.position.y = hovPulse * 2;
+      g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, p * Math.PI * 0.6 + (hov ? time * 0.4 : 0), 0.06);
       g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, 0, 0.06);
-      const sv = Math.max(0.01, 1 - p);
+      const sv = Math.max(0.01, 1 - p + (hov ? 0.12 * (1 - p) : 0));
       m.scale.setScalar(THREE.MathUtils.lerp(m.scale.x, sv, 0.09));
     } else {
-      // Contact: reassemble from nothing
+      // Contact: reassemble — hover boosts the spin speed
       const p = (t - 0.74) / 0.26;
       g.position.x = THREE.MathUtils.lerp(g.position.x, 0, 0.06);
-      g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, p * Math.PI * 2, 0.07);
+      g.position.y = hovPulse;
+      g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, p * Math.PI * 2 + hovRotY, 0.07);
       g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, 0, 0.06);
-      const sv = Math.max(0.01, p * 1.0);
+      const sv = Math.max(0.01, p * 1.0 + (hov ? 0.06 : 0));
       m.scale.setScalar(THREE.MathUtils.lerp(m.scale.x, sv, 0.09));
     }
   });

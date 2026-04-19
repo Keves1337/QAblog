@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, lazy, Suspense } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import {
   ExternalLink, Mail, Phone, MapPin, Send,
@@ -6,8 +6,9 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import MonolithScene from "@/components/MonolithScene";
 import { WebGLGuard, hasWebGL } from "@/components/WebGLGuard";
+// Lazy-load the heavy R3F bundle — desktop+WebGL only, keeps mobile payload small
+const MonolithScene = lazy(() => import("@/components/MonolithScene"));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -580,9 +581,11 @@ export default function Index() {
             pointerEvents: "none",
           }}
         >
-          <WebGLGuard>
-            <MonolithScene scrollProgress={scrollProgressRef} isHovered={isHoveredRef} />
-          </WebGLGuard>
+          <Suspense fallback={null}>
+            <WebGLGuard>
+              <MonolithScene scrollProgress={scrollProgressRef} isHovered={isHoveredRef} />
+            </WebGLGuard>
+          </Suspense>
         </div>
       )}
 
