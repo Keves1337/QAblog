@@ -14,7 +14,7 @@ interface Props {
 /* ─── Particle shatter cloud ──────────────────────────────────────────────── */
 function Particles({ scrollProgress }: { scrollProgress: MutableRefObject<number> }) {
   const meshRef = useRef<THREE.InstancedMesh>(null!);
-  const count = 700;
+  const count = 1050;
 
   const data = useMemo(() => {
     const positions = new Float32Array(count * 3);

@@ -372,15 +372,52 @@ export default function Index() {
     };
   }, [isMobile, cursorX, cursorY, cursorScale]);
 
-  /* ── Scroll progress for 3D scene ── */
+  /* ── Wire isHoveredRef to bento project cards (monolith reacts to hover) ── */
   useEffect(() => {
-    const update = () => {
-      const total = document.documentElement.scrollHeight - window.innerHeight;
-      scrollProgressRef.current = total > 0 ? window.scrollY / total : 0;
+    if (!webglOk) return;
+    const onEnter = () => { isHoveredRef.current = true; };
+    const onLeave = () => { isHoveredRef.current = false; };
+    const targets = document.querySelectorAll<HTMLElement>(
+      '#projects .group, a[href*="behemothqa"], a[href*="github"], .bento-card'
+    );
+    targets.forEach(el => {
+      el.addEventListener("mouseenter", onEnter);
+      el.addEventListener("mouseleave", onLeave);
+    });
+    return () => {
+      targets.forEach(el => {
+        el.removeEventListener("mouseenter", onEnter);
+        el.removeEventListener("mouseleave", onLeave);
+      });
     };
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, []);
+  }, [webglOk]);
+
+  /* ── Scroll progress for 3D scene — GSAP ScrollTrigger, section-based ── */
+  useEffect(() => {
+    if (!webglOk) return;
+    // Map each content section to its monolith phase (0–1 across 4 phases)
+    // hero → 0.00–0.25 | about → 0.25–0.50 | projects → 0.50–0.75 | contact → 0.75–1.00
+    const makeSectionTrigger = (id: string, base: number) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      return ScrollTrigger.create({
+        trigger: el,
+        start: "top 90%",
+        end: "bottom 10%",
+        scrub: 0.6,
+        onUpdate: (self) => {
+          scrollProgressRef.current = base + self.progress * 0.25;
+        },
+      });
+    };
+    const triggers = [
+      makeSectionTrigger("hero",    0.00),
+      makeSectionTrigger("about",   0.25),
+      makeSectionTrigger("projects",0.50),
+      makeSectionTrigger("contact", 0.75),
+    ].filter(Boolean);
+    return () => { triggers.forEach(t => t?.kill()); };
+  }, [webglOk]);
 
   /* ── GSAP: parallax big words + section reveals ── */
   useEffect(() => {
@@ -388,16 +425,32 @@ export default function Index() {
 
     const words = document.querySelectorAll<HTMLElement>(".parallax-word");
     words.forEach((el, i) => {
+      const sectionTrigger = el.closest("section") ?? el.closest("[id]") ?? el;
+      // y-parallax drift
       gsap.fromTo(el,
         { y: 0 },
         {
           y: -90 - i * 20,
           ease: "none",
           scrollTrigger: {
-            trigger: el.closest("section") ?? el,
+            trigger: sectionTrigger,
             start: "top bottom",
             end: "bottom top",
             scrub: 1.5,
+          },
+        },
+      );
+      // clip-path mask reveal — left-to-right unmasking on scroll-in
+      gsap.fromTo(el,
+        { clipPath: "inset(0 100% 0 0)" },
+        {
+          clipPath: "inset(0 0% 0 0)",
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: sectionTrigger,
+            start: "top 88%",
+            end: "top 30%",
+            scrub: 0.8,
           },
         },
       );
@@ -499,8 +552,6 @@ export default function Index() {
             position: "fixed", inset: 0, zIndex: 0,
             pointerEvents: "none",
           }}
-          onMouseEnter={() => { isHoveredRef.current = true; }}
-          onMouseLeave={() => { isHoveredRef.current = false; }}
         >
           <WebGLGuard>
             <MonolithScene scrollProgress={scrollProgressRef} isHovered={isHoveredRef} />
@@ -795,12 +846,25 @@ export default function Index() {
             </BC>
 
             {/* ══ SKILLS MARQUEE ══════════════════════════════════════════ */}
-            <BC id="skills" col="span 3" innerStyle={{ padding: "18px 0", overflow: "hidden" }}>
-              <div style={{ padding: "0 24px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <BC id="skills" col="span 3" innerStyle={{ padding: "18px 0", overflow: "hidden", position: "relative" }}>
+              {/* Parallax word — CREATION */}
+              <div className="parallax-word" style={{
+                position: "absolute", right: "clamp(1rem,5vw,6rem)", top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: "clamp(3rem,10vw,8.5rem)",
+                fontWeight: 900, letterSpacing: "-0.06em",
+                color: "rgba(167,243,208,0.06)",
+                userSelect: "none", pointerEvents: "none",
+                lineHeight: 1, fontFamily: "'Inter', sans-serif",
+                zIndex: 0,
+              }}>CREATION</div>
+              <div style={{ position: "relative", zIndex: 1, padding: "0 24px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
                 <Zap style={{ width: "13px", color: ACC, animation: "float-icon 3s ease-in-out infinite" }} />
                 <span style={{ fontSize: "0.67rem", fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.12em" }}>Skills &amp; Tools</span>
               </div>
-              <Marquee />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <Marquee />
+              </div>
             </BC>
 
             {/* ══ BEHEMOTHQA IDE ══════════════════════════════════════════ */}
@@ -965,8 +1029,19 @@ export default function Index() {
             </BC>
 
             {/* ══ CONTACT ══════════════════════════════════════════════ */}
-            <BC id="contact" col="span 3">
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "22px" }}>
+            <BC id="contact" col="span 3" innerStyle={{ position: "relative" }}>
+              {/* Parallax word — QUALITY */}
+              <div className="parallax-word" style={{
+                position: "absolute", right: "clamp(1rem,6vw,7rem)", top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: "clamp(3rem,10vw,8.5rem)",
+                fontWeight: 900, letterSpacing: "-0.06em",
+                color: "rgba(251,191,36,0.05)",
+                userSelect: "none", pointerEvents: "none",
+                lineHeight: 1, fontFamily: "'Inter', sans-serif",
+                zIndex: 0,
+              }}>QUALITY</div>
+              <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "22px" }}>
                 <div>
                   <h2 style={{ fontWeight: 900, fontSize: "clamp(1.7rem,4vw,2.5rem)", color: BOLD, letterSpacing: "-0.04em", lineHeight: 1, marginBottom: "8px" }}>
                     Let's<span style={{ color: ACC }}> work</span> together.
@@ -978,7 +1053,9 @@ export default function Index() {
                   <BtnPrimary href="https://settings-qa-ai.replit.app" external>BehemothQA <ExternalLink style={{ width: "12px", height: "12px" }} /></BtnPrimary>
                 </div>
               </div>
-              <ContactForm />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <ContactForm />
+              </div>
             </BC>
 
             {/* ══ FOOTER ══════════════════════════════════════════════ */}
