@@ -288,9 +288,33 @@ export default function Page() {
           padding:"0 2rem", minHeight:"56px",
           background:"rgba(8,8,18,0.55)", backdropFilter:"blur(14px)", WebkitBackdropFilter:"blur(14px)",
         }}>
-          <span style={{ fontWeight:600, fontSize:"1rem", color:W, letterSpacing:"-0.03em", fontFamily:"'Poppins',sans-serif" }}>
-            Johnatan<span style={{ color:W60 }}>.</span>
-          </span>
+          <a href="#hero" onClick={scrollTo("hero")} aria-label="Home"
+            style={{ display:"inline-flex", alignItems:"center", textDecoration:"none" }}>
+            <svg width="38" height="38" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"
+              style={{ display:"block" }}>
+              <defs>
+                <linearGradient id="jmStroke" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.95)" />
+                  <stop offset="55%" stopColor="rgba(255,255,255,0.65)" />
+                  <stop offset="100%" stopColor="rgba(255,255,255,0.95)" />
+                </linearGradient>
+                <linearGradient id="jmRing" x1="0" y1="0" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
+                  <stop offset="50%" stopColor="rgba(255,255,255,0.10)" />
+                  <stop offset="100%" stopColor="rgba(255,255,255,0.55)" />
+                </linearGradient>
+              </defs>
+              <rect x="1" y="1" width="42" height="42" rx="11" fill="rgba(255,255,255,0.04)" stroke="url(#jmRing)" strokeWidth="1.2" />
+              {/* M strokes */}
+              <path d="M11 31 L11 14 L17 24 L23 14 L23 31"
+                stroke="url(#jmStroke)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              {/* J descender */}
+              <path d="M33 13 L33 28 Q33 33 28 33 Q24 33 24 29"
+                stroke="url(#jmStroke)" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+              {/* J top serif dot */}
+              <circle cx="33" cy="11.4" r="1.5" fill="rgba(255,255,255,0.92)" />
+            </svg>
+          </a>
           {!isMobile && (
             <div style={{ display:"flex", gap:"4px" }}>
               {["About","Projects","Skills"].map(l => (
@@ -837,12 +861,13 @@ export default function Page() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="lgs" style={{
+        {/* Footer — flat, no glass frame */}
+        <footer style={{
           padding:"1.5rem clamp(1.5rem,6vw,4.5rem)",
           display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"8px",
+          background:"transparent",
         }}>
-          <span style={{ fontSize:"0.75rem", color:W50 }}>2025 Johnatan Milrad · QA Engineer</span>
+          <span style={{ fontSize:"0.75rem", color:W50 }}>Johnatan Milrad · QA Engineer</span>
           <span style={{ fontSize:"0.7rem", color:W25, letterSpacing:"0.04em" }}>Built with precision.</span>
         </footer>
       </div>
