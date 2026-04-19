@@ -482,12 +482,10 @@ export default function Page() {
       {/* ══════════════════════════════════════════════════════════════════════
           NAV
       ══════════════════════════════════════════════════════════════════════ */}
-      <nav style={{
+      <nav className="nav-glass" style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         display: "flex", alignItems: "center", flexWrap: "wrap", justifyContent: "space-between",
         padding: "0 32px", minHeight: "54px",
-        background: "rgba(5,5,5,0.72)", backdropFilter: "blur(20px) saturate(1.4)",
-        borderBottom: "1px solid rgba(255,255,255,0.045)",
       }}>
         <motion.span initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
@@ -552,8 +550,9 @@ export default function Page() {
 
           <h1 style={{
             fontSize: "clamp(2.8rem,7.5vw,5.6rem)",
-            fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 0.93,
+            fontWeight: 800, letterSpacing: "-0.05em", lineHeight: 0.93,
             color: BOLD, marginBottom: "1.6rem",
+            fontFamily: "'Poppins', sans-serif",
           }}>
             <SplitText text="Johnatan" />
             <br />
@@ -562,9 +561,9 @@ export default function Page() {
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.44, duration: 0.6 }}
-            style={{ fontSize: "clamp(0.9rem,2vw,1.1rem)", color: TEXT, lineHeight: 1.7, maxWidth: "44ch", marginBottom: "2.5rem" }}
+            style={{ fontSize: "clamp(0.9rem,2vw,1.1rem)", color: TEXT, lineHeight: 1.7, maxWidth: "44ch", marginBottom: "2.5rem", fontWeight: 400 }}
           >
-            Manual QA graduate with UI/UX sensibility and a precise eye for broken software, catching what automated tools miss.
+            Manual QA graduate with <em style={{ fontFamily: "'Source Serif 4', serif", fontStyle: "italic", color: "rgba(248,250,252,0.75)" }}>UI/UX sensibility</em> and a precise eye for broken software, catching what automated tools miss.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -611,7 +610,7 @@ export default function Page() {
             {/* Left: bio */}
             <div>
               <h2 className="reveal-item cinematic-heading" style={{ marginBottom: "1.5rem" }}>
-                The Precise Eye<br />for <span style={{ color: ACC }}>Broken</span> Software.
+                The <em>Precise Eye</em><br />for <span style={{ color: ACC }}>Broken</span> Software.
               </h2>
 
               <p className="reveal-item" style={{ fontSize: "0.93rem", color: TEXT, lineHeight: 1.8, marginBottom: "1rem" }}>
@@ -666,7 +665,9 @@ export default function Page() {
                     { icon: Phone,  text: "+972 523 516 364",             href: "tel:+972523516364" },
                   ].map(({ icon: Icon, text, href }) => (
                     <div key={text} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "0.8rem", color: TEXT }}>
-                      <Icon style={{ width: "13px", color: ACC, flexShrink: 0 }} />
+                      <div className="contact-icon-pill" style={{ width: "28px", height: "28px", borderRadius: "8px", flexShrink: 0 }}>
+                        <Icon style={{ width: "12px", color: ACC, position: "relative", zIndex: 1 }} />
+                      </div>
                       {href ? <a href={href} style={{ color: TEXT, textDecoration: "none" }}>{text}</a> : <span>{text}</span>}
                     </div>
                   ))}
@@ -844,7 +845,7 @@ export default function Page() {
             {/* Skill categories */}
             <div>
               <h2 className="reveal-item cinematic-heading" style={{ marginBottom: "2rem", fontSize: "clamp(1.8rem,3.5vw,2.8rem)" }}>
-                Precision<br /><span style={{ color: ACC }}>Toolset.</span>
+                <em>Precision</em><br /><span style={{ color: ACC }}>Toolset.</span>
               </h2>
               {[
                 { cat: "QA",      col: ACC,       items: ["Manual Testing","Test Case Design","Bug Reporting","Regression","Exploratory Testing","Mobile Testing"] },
@@ -857,10 +858,11 @@ export default function Page() {
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                     {g.items.map(s => (
-                      <span key={s} style={{ padding: "4px 11px", borderRadius: "7px", fontSize: "0.76rem", fontWeight: 500, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", color: TEXT, transition: "border-color 0.2s, color 0.2s, background 0.2s" }}
-                        onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = `${g.col}50`; el.style.color = g.col; el.style.background = `${g.col}08`; }}
-                        onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = "rgba(255,255,255,0.08)"; el.style.color = TEXT; el.style.background = "rgba(255,255,255,0.035)"; }}
-                      >{s}</span>
+                      <span key={s} className="skill-pill"
+                        style={{ "--pill-col": g.col } as React.CSSProperties}
+                        onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = g.col; }}
+                        onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = TEXT; }}
+                      ><span>{s}</span></span>
                     ))}
                   </div>
                 </div>
@@ -908,7 +910,7 @@ export default function Page() {
             {/* Left: heading + details */}
             <div>
               <h2 className="reveal-item cinematic-heading" style={{ marginBottom: "1.5rem" }}>
-                Let's<span style={{ color: ACC }}> work</span><br />together.
+                Let's <span style={{ color: ACC }}>work</span><br /><em>together.</em>
               </h2>
               <p className="reveal-item" style={{ fontSize: "0.9rem", color: TEXT, lineHeight: 1.75, marginBottom: "2rem", maxWidth: "36ch" }}>
                 Submit a message. I respond to every serious inquiry.
@@ -920,8 +922,8 @@ export default function Page() {
                   { icon: MapPin, text: "Ashdod, Israel",               href: undefined },
                 ].map(({ icon: Icon, text, href }) => (
                   <div key={text} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{ width: "36px", height: "36px", borderRadius: "9px", background: A_DIM, border: "1px solid rgba(0,229,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Icon style={{ width: "14px", color: ACC }} />
+                    <div className="contact-icon-pill">
+                      <Icon style={{ width: "14px", color: ACC, position: "relative", zIndex: 1 }} />
                     </div>
                     {href
                       ? <a href={href} style={{ fontSize: "0.88rem", color: TEXT, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={e => (e.currentTarget.style.color = BOLD)} onMouseLeave={e => (e.currentTarget.style.color = TEXT)}>{text}</a>
@@ -962,43 +964,143 @@ export default function Page() {
         /* ── Section layout helpers ── */
         .section-left-veil {
           position: absolute; inset: 0; pointer-events: none;
-          background: linear-gradient(to right, rgba(5,5,8,0.85) 0%, rgba(5,5,8,0.55) 48%, transparent 100%);
+          background: linear-gradient(to right, rgba(4,4,10,0.80) 0%, rgba(4,4,10,0.42) 48%, transparent 100%);
         }
         .section-label { display: flex; align-items: baseline; gap: 0.6rem; }
-        .section-num { font-size: clamp(0.68rem,1.5vw,0.82rem); font-weight: 800; color: ${ACC}; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
+        .section-num { font-size: clamp(0.68rem,1.5vw,0.82rem); font-weight: 700; color: ${ACC}; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
         .section-slash { color: rgba(0,229,255,0.28); font-size: 0.78rem; }
-        .section-title-text { font-size: clamp(0.68rem,1.5vw,0.82rem); font-weight: 800; color: ${MUTED}; letter-spacing: 0.18em; text-transform: uppercase; }
+        .section-title-text { font-size: clamp(0.68rem,1.5vw,0.82rem); font-weight: 700; color: ${MUTED}; letter-spacing: 0.18em; text-transform: uppercase; }
 
-        /* ── Cinematic heading ── */
-        .cinematic-heading { font-size: clamp(2rem,4.5vw,3.4rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; color: ${BOLD}; margin: 0; }
+        /* ── Cinematic heading — Poppins with optional serif italic ── */
+        .cinematic-heading { font-size: clamp(2rem,4.5vw,3.4rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; color: ${BOLD}; margin: 0; font-family: 'Poppins', sans-serif; }
+        .cinematic-heading em { font-family: 'Source Serif 4', serif; font-style: italic; font-weight: 400; color: rgba(248,250,252,0.8); }
 
-        /* ── Glass panel ── */
-        .glass-panel { background: rgba(7,8,14,0.78); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(0,229,255,0.09); border-radius: 20px; }
+        /* ── Glass panel — liquid-glass-strong tier ── */
+        .glass-panel {
+          background: rgba(5,5,12,0.60);
+          backdrop-filter: blur(48px) saturate(1.6);
+          -webkit-backdrop-filter: blur(48px) saturate(1.6);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.13);
+          border-radius: 22px;
+          position: relative; overflow: hidden;
+        }
+        .glass-panel::before {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          padding: 1.4px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, transparent 40%, transparent 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none; z-index: 0;
+        }
+        .glass-panel > * { position: relative; z-index: 1; }
 
         /* ── About section grid ── */
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
 
         /* ── Project strips ── */
-        .project-strip { margin-bottom: 1rem; }
-        .project-strip-inner { background: rgba(7,8,14,0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 28px 32px; display: flex; gap: 2rem; align-items: flex-start; transition: border-color 0.25s; }
-        .project-strip-inner:hover { border-color: rgba(0,229,255,0.18); }
+        .project-strip { margin-bottom: 0.875rem; }
+        .project-strip-inner {
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(14px) saturate(1.5);
+          -webkit-backdrop-filter: blur(14px) saturate(1.5);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.30);
+          border-radius: 20px;
+          padding: 26px 30px;
+          display: flex; gap: 2rem; align-items: flex-start;
+          position: relative; overflow: hidden;
+          transition: box-shadow 0.28s;
+        }
+        .project-strip-inner::before {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          padding: 1.4px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.10) 20%, transparent 40%, transparent 60%, rgba(255,255,255,0.10) 80%, rgba(255,255,255,0.38) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none; z-index: 0;
+        }
+        .project-strip-inner > * { position: relative; z-index: 1; }
+        .project-strip-inner:hover { box-shadow: inset 0 1px 1px rgba(255,255,255,0.14), 0 4px 32px rgba(0,229,255,0.10), 0 0 0 1px rgba(0,229,255,0.14); }
         .project-meta { display: flex; gap: 1.5rem; flex: 1; min-width: 0; }
-        .project-number { font-size: clamp(2.5rem,5vw,4rem); font-weight: 900; color: rgba(0,229,255,0.07); font-family: 'JetBrains Mono', monospace; letter-spacing: -0.04em; line-height: 1; flex-shrink: 0; user-select: none; }
-        .project-name { font-size: 1.15rem; font-weight: 800; color: ${BOLD}; letter-spacing: -0.02em; margin: 0; }
-        .project-ide { flex-shrink: 0; width: clamp(240px, 35%, 400px); }
-        .tech-tag { padding: 3px 10px; border-radius: 99px; font-size: 0.69rem; font-weight: 600; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); color: ${TEXT}; }
+        .project-number { font-size: clamp(2.5rem,5vw,4rem); font-weight: 800; color: rgba(0,229,255,0.06); font-family: 'JetBrains Mono', monospace; letter-spacing: -0.04em; line-height: 1; flex-shrink: 0; user-select: none; }
+        .project-name { font-size: 1.12rem; font-weight: 700; color: ${BOLD}; letter-spacing: -0.02em; margin: 0; font-family: 'Poppins', sans-serif; }
+        .project-ide { flex-shrink: 0; width: clamp(220px, 34%, 380px); }
+        .tech-tag { padding: 3px 11px; border-radius: 99px; font-size: 0.69rem; font-weight: 500; background: rgba(255,255,255,0.05); color: ${TEXT}; position: relative; overflow: hidden; display: inline-block; }
+        .tech-tag::before {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, transparent 50%, rgba(255,255,255,0.08) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        /* ── Skill pill ── */
+        .skill-pill {
+          padding: 5px 13px; border-radius: 99px; font-size: 0.75rem; font-weight: 500;
+          background: rgba(255,255,255,0.04);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.08);
+          color: ${TEXT}; transition: color 0.2s, box-shadow 0.2s; cursor: default;
+          position: relative; overflow: hidden; display: inline-block;
+        }
+        .skill-pill::before {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.30) 0%, transparent 50%, rgba(255,255,255,0.08) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none;
+        }
+        .skill-pill > span { position: relative; z-index: 1; }
+        .skill-pill:hover { color: ${BOLD}; box-shadow: inset 0 1px 1px rgba(255,255,255,0.14), 0 0 0 1px rgba(0,229,255,0.22); }
 
         /* ── Skills grid ── */
-        .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+        .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
         .skill-category { margin-bottom: 1.5rem; }
 
         /* ── Contact grid ── */
-        .contact-cinematic-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 4rem; align-items: start; }
+        .contact-cinematic-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 3.5rem; align-items: start; }
+
+        /* ── Contact icon pill ── */
+        .contact-icon-pill {
+          width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(255,255,255,0.05);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 2px 8px rgba(0,0,0,0.25);
+          position: relative; overflow: hidden;
+        }
+        .contact-icon-pill::before {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 50%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none;
+        }
 
         /* ── Shared animations ── */
         @keyframes marquee-fwd { from { transform: translateX(0) } to { transform: translateX(-50%) } }
         @keyframes marquee-rev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
         .marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%); }
+
+        /* ── Nav pill ── */
+        .nav-glass {
+          background: rgba(5,5,12,0.65);
+          backdrop-filter: blur(28px) saturate(1.6);
+          -webkit-backdrop-filter: blur(28px) saturate(1.6);
+          box-shadow: 0 1px 24px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.10);
+          border-bottom: none;
+        }
+        .nav-glass::after {
+          content: '';
+          position: absolute; bottom: 0; left: 0; right: 0; height: 1.4px;
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.20) 30%, rgba(255,255,255,0.08) 70%, transparent 100%);
+          pointer-events: none;
+        }
 
         /* ── Mobile overrides ── */
         @media (max-width: 767px) {
@@ -1011,7 +1113,7 @@ export default function Page() {
           .project-strip-inner { flex-direction: column !important; }
           .project-ide { width: 100% !important; }
           .project-meta { flex-direction: column !important; gap: 0.75rem !important; }
-          .section-left-veil { background: rgba(5,5,8,0.78) !important; }
+          .section-left-veil { background: rgba(4,4,10,0.80) !important; }
           .cinematic-heading { font-size: clamp(1.8rem, 8vw, 2.4rem) !important; }
           #hero h1 { font-size: clamp(2.4rem, 9vw, 3.2rem) !important; }
           .ide-body { overflow-x: auto !important; }
