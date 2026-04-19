@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef, useCallback, lazy, Suspense } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import {
   ExternalLink, Mail, Phone, MapPin, Send,
-  Shield, Zap, Eye, ArrowUpRight,
+  Shield, Eye, ArrowRight, Sparkles,
+  FileText, Zap, Menu,
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,38 +12,27 @@ const MonolithScene = lazy(() => import("@/components/MonolithScene"));
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ─── Palette ───────────────────────────────────────────────────────────── */
-const ACC   = "#00e5ff";
-const A_DIM = "rgba(0,229,255,0.08)";
-const BOLD  = "#f8fafc";
-const TEXT  = "rgba(248,250,252,0.5)";
-const MUTED = "rgba(248,250,252,0.2)";
-const G     = "#22c55e";
-const BASE  = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+/* ─── Palette — Bloom white hierarchy ──────────────────────────────────── */
+const W   = "rgba(255,255,255,1)";
+const W80 = "rgba(255,255,255,0.80)";
+const W60 = "rgba(255,255,255,0.60)";
+const W50 = "rgba(255,255,255,0.50)";
+const W25 = "rgba(255,255,255,0.25)";
+const W10 = "rgba(255,255,255,0.10)";
+const G   = "#22c55e";
+const ACC = "#00e5ff";
+const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
-/* ─── Hook: detect mobile (< 768 px) ───────────────────────────────────── */
+/* ─── Mobile hook ───────────────────────────────────────────────────────── */
 const useIsMobile = () => {
-  const [m, setM] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+  const [m, setM] = useState(() => typeof window !== "undefined" && window.innerWidth < 1024);
   useEffect(() => {
-    const fn = () => setM(window.innerWidth < 768);
+    const fn = () => setM(window.innerWidth < 1024);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
   return m;
 };
-
-/* ─── Letter-by-letter text reveal ──────────────────────────────────────── */
-function SplitText({ text, style }: { text: string; style?: React.CSSProperties }) {
-  return (
-    <span style={{ display: "inline-block", ...style }}>
-      {text.split("").map((char, i) => (
-        <span key={i} className="split-letter"
-          style={{ animationDelay: `${0.30 + i * 0.042}s`, whiteSpace: char === " " ? "pre" : undefined }}
-        >{char}</span>
-      ))}
-    </span>
-  );
-}
 
 /* ─── Marquee ────────────────────────────────────────────────────────────── */
 const SKILLS = [
@@ -52,18 +42,13 @@ const SKILLS = [
   "Web Accessibility","Security QA","Performance QA","Agile/Scrum",
 ];
 const Marquee = () => (
-  <div className="marquee-mask" style={{ overflow: "hidden" }}>
-    {[1, 2].map(k => (
-      <div key={k} className={`marquee-row marquee-row--${k % 2 === 0 ? "rev" : "fwd"}`}
-        style={{ display: "flex", gap: "10px", padding: "5px 0", width: "max-content", animation: `marquee-${k % 2 === 0 ? "rev" : "fwd"} 38s linear infinite` }}
-      >
-        {[...SKILLS, ...SKILLS].map((s, i) => (
-          <span key={i} style={{
-            padding: "6px 14px", borderRadius: "8px", flexShrink: 0,
-            border: "1px solid rgba(0,229,255,0.14)",
-            background: "rgba(0,229,255,0.04)",
-            fontSize: "0.78rem", fontWeight: 500, color: TEXT, whiteSpace: "nowrap",
-          }}>{s}</span>
+  <div style={{ overflow:"hidden", WebkitMaskImage:"linear-gradient(90deg,transparent 0%,#fff 8%,#fff 92%,transparent 100%)", maskImage:"linear-gradient(90deg,transparent 0%,#fff 8%,#fff 92%,transparent 100%)" }}>
+    {[1,2].map(k => (
+      <div key={k} style={{ display:"flex", gap:"8px", padding:"4px 0", width:"max-content",
+        animation:`mq-${k%2===0?"rev":"fwd"} 38s linear infinite` }}>
+        {[...SKILLS,...SKILLS].map((s,i) => (
+          <span key={i} className="lg-pill" style={{ padding:"5px 14px", borderRadius:"99px", fontSize:"0.75rem",
+            color:W60, whiteSpace:"nowrap", flexShrink:0 }}>{s}</span>
         ))}
       </div>
     ))}
@@ -83,31 +68,26 @@ const Pu = ({ c }: { c: string }) => <span className="gb-pu">{c}</span>;
 
 const GlassBox = () => {
   const boxRef = useRef<HTMLDivElement>(null);
-  const [scan, setScan]     = useState(false);
+  const [scan, setScan] = useState(false);
   const [jitter, setJitter] = useState(false);
-
   const setXY = (x: number, y: number) => {
-    const el = boxRef.current;
-    if (!el) return;
-    el.style.setProperty("--gcx", `${x}px`);
-    el.style.setProperty("--gcy", `${y}px`);
+    const el = boxRef.current; if (!el) return;
+    el.style.setProperty("--gcx", `${x}px`); el.style.setProperty("--gcy", `${y}px`);
   };
-  const onMove  = (e: React.MouseEvent) => { const r = boxRef.current!.getBoundingClientRect(); setXY(e.clientX - r.left, e.clientY - r.top); };
-  const onLeave = () => setXY(-300, -300);
-  const onTouch = (e: React.TouchEvent) => { const r = boxRef.current!.getBoundingClientRect(); setXY(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); };
+  const onMove  = (e: React.MouseEvent) => { const r = boxRef.current!.getBoundingClientRect(); setXY(e.clientX-r.left,e.clientY-r.top); };
+  const onLeave = () => setXY(-300,-300);
+  const onTouch = (e: React.TouchEvent) => { const r = boxRef.current!.getBoundingClientRect(); setXY(e.touches[0].clientX-r.left,e.touches[0].clientY-r.top); };
   const onClick = () => {
     if (scan) return;
     setScan(true); setJitter(true);
     setTimeout(() => setJitter(false), 900);
     setTimeout(() => setScan(false), 1800);
   };
-
   return (
-    <div ref={boxRef} className={`gb-root${scan ? " gb-scanning" : ""}`}
-      style={{ "--gcx": "-300px", "--gcy": "-300px" } as React.CSSProperties}
-      onMouseMove={onMove} onMouseLeave={onLeave} onTouchMove={onTouch} onTouchEnd={onLeave} onClick={onClick}
-    >
-      <div className={`gb-code${jitter ? " gb-jitter" : ""}`}>
+    <div ref={boxRef} className={`gb-root${scan?" gb-scanning":""}`}
+      style={{ "--gcx":"-300px","--gcy":"-300px" } as React.CSSProperties}
+      onMouseMove={onMove} onMouseLeave={onLeave} onTouchMove={onTouch} onTouchEnd={onLeave} onClick={onClick}>
+      <div className={`gb-code${jitter?" gb-jitter":""}`}>
         <pre className="gb-pre">
           <GbLine><Cm c="# // glass_box.py | QA Component Lab" /></GbLine>
           <GbLine><Cm c="# Move cursor to X-ray · Click to run diagnostic" /></GbLine>
@@ -128,9 +108,9 @@ const GlassBox = () => {
       <div className="gb-glass">
         <div className="gb-ui">
           <div className="gb-ui-label"><Cm c="# // QA Component Lab" /></div>
-          <div className="gb-ui-title">Glass<span style={{ color: ACC }}>Box</span></div>
+          <div className="gb-ui-title">Glass<span style={{ color:ACC }}>Box</span></div>
           <div className="gb-ui-desc">Move cursor to X-ray the source code beneath the glass. Click to run a system diagnostic scan.</div>
-          <button className="gb-ui-btn" onClick={onClick}>Run Diagnostic →</button>
+          <button className="gb-ui-btn" onClick={onClick}>Run Diagnostic</button>
         </div>
       </div>
       <div className="gb-cursor-ring" aria-hidden="true" />
@@ -138,44 +118,43 @@ const GlassBox = () => {
   );
 };
 
-/* ─── Cert 3D flip card ──────────────────────────────────────────────────── */
+/* ─── Cert flip card ─────────────────────────────────────────────────────── */
 const FACE: React.CSSProperties = {
-  position: "absolute", inset: 0,
-  backfaceVisibility: "hidden",
-  WebkitBackfaceVisibility: "hidden" as React.CSSProperties["WebkitBackfaceVisibility"],
-  display: "flex", gap: "12px", alignItems: "flex-start",
+  position:"absolute", inset:0, backfaceVisibility:"hidden",
+  WebkitBackfaceVisibility:"hidden" as React.CSSProperties["WebkitBackfaceVisibility"],
+  display:"flex", gap:"12px", alignItems:"flex-start",
 };
 const CertFlipCard = () => {
   const [flipped, setFlipped] = useState(false);
   const [quick,   setQuick]   = useState(false);
   return (
-    <div style={{ flex: 1, minHeight: "130px", perspective: "900px", cursor: "pointer", userSelect: "none" }}
+    <div style={{ flex:1, minHeight:"130px", perspective:"900px", cursor:"pointer", userSelect:"none" }}
       onMouseEnter={() => { setQuick(false); setFlipped(true); }}
       onMouseLeave={() => { setQuick(false); setFlipped(false); }}
       onClick={() => { setQuick(true); setFlipped(f => !f); }}
     >
       <motion.div animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={{ duration: quick ? 0.22 : 0.72, ease: [0.4, 0, 0.2, 1] }}
-        style={{ width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d" }}
+        transition={{ duration: quick ? 0.22 : 0.72, ease:[0.4,0,0.2,1] }}
+        style={{ width:"100%", height:"100%", position:"relative", transformStyle:"preserve-3d" }}
       >
         <div style={FACE}>
-          <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", background: A_DIM, border: "1px solid rgba(0,229,255,0.18)" }}>
-            <Shield style={{ width: "18px", height: "18px", color: ACC }} strokeWidth={1.5} />
+          <div style={{ padding:"11px", borderRadius:"11px", flexShrink:0, background:"rgba(255,255,255,0.07)", animation:"float-badge 5.5s ease-in-out infinite" }}>
+            <Shield style={{ width:"18px", height:"18px", color:W }} strokeWidth={1.5} />
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: "0.95rem", color: BOLD, marginBottom: "4px", letterSpacing: "-0.01em" }}>Manual QA Engineer</div>
-            <div style={{ fontSize: "0.75rem", color: ACC, marginBottom: "10px", fontWeight: 600 }}>QA Course · Graduate</div>
-            <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65, margin: 0 }}>Full manual testing lifecycle: test case design, bug reporting, regression testing, Jira, web and mobile platforms.</p>
+            <div style={{ fontWeight:600, fontSize:"0.92rem", color:W, marginBottom:"4px" }}>Manual QA Engineer</div>
+            <div style={{ fontSize:"0.72rem", color:W60, marginBottom:"8px" }}>QA Course · Graduate</div>
+            <p style={{ fontSize:"0.78rem", color:W50, lineHeight:1.65, margin:0 }}>Full manual testing lifecycle: test case design, bug reporting, regression testing, Jira, web and mobile platforms.</p>
           </div>
         </div>
-        <div style={{ ...FACE, transform: "rotateY(180deg)" }}>
-          <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.22)" }}>
-            <Eye style={{ width: "18px", height: "18px", color: "#a78bfa" }} strokeWidth={1.5} />
+        <div style={{ ...FACE, transform:"rotateY(180deg)" }}>
+          <div style={{ padding:"11px", borderRadius:"11px", flexShrink:0, background:"rgba(255,255,255,0.07)", animation:"float-badge 5.5s ease-in-out infinite" }}>
+            <Eye style={{ width:"18px", height:"18px", color:W }} strokeWidth={1.5} />
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: "0.95rem", color: BOLD, marginBottom: "4px", letterSpacing: "-0.01em" }}>UI/UX Designer</div>
-            <div style={{ fontSize: "0.75rem", color: "#a78bfa", marginBottom: "10px", fontWeight: 600 }}>UI/UX Prodigy</div>
-            <p style={{ fontSize: "0.79rem", color: TEXT, lineHeight: 1.65, margin: 0 }}>Figma, Photoshop, Illustrator. Design instinct sharpens QA precision — spotting what's visually wrong instantly.</p>
+            <div style={{ fontWeight:600, fontSize:"0.92rem", color:W, marginBottom:"4px" }}>UI/UX Designer</div>
+            <div style={{ fontSize:"0.72rem", color:W60, marginBottom:"8px" }}>UI/UX Prodigy</div>
+            <p style={{ fontSize:"0.78rem", color:W50, lineHeight:1.65, margin:0 }}>Figma, Photoshop, Illustrator. Design instinct sharpens QA precision — spotting what's visually wrong instantly.</p>
           </div>
         </div>
       </motion.div>
@@ -183,15 +162,15 @@ const CertFlipCard = () => {
   );
 };
 
-/* ─── Python IDE snippet ─────────────────────────────────────────────────── */
+/* ─── IDE block ──────────────────────────────────────────────────────────── */
 const IdeBlock = () => (
-  <div className="ide-window" style={{ flex: 1 }}>
+  <div className="ide-window" style={{ flex:1 }}>
     <div className="ide-bar">
-      <span className="ide-dot" style={{ background: "#ff5f57" }} />
-      <span className="ide-dot" style={{ background: "#febc2e" }} />
-      <span className="ide-dot" style={{ background: "#28c840" }} />
-      <span style={{ marginLeft: "10px", color: MUTED, fontSize: "0.68rem" }}>behemoth_qa.py</span>
-      <span style={{ marginLeft: "auto" }} className="badge">Python 3.12</span>
+      <span className="ide-dot" style={{ background:"#ff5f57" }} />
+      <span className="ide-dot" style={{ background:"#febc2e" }} />
+      <span className="ide-dot" style={{ background:"#28c840" }} />
+      <span style={{ marginLeft:"10px", color:W25, fontSize:"0.68rem" }}>behemoth_qa.py</span>
+      <span style={{ marginLeft:"auto" }} className="badge">Python 3.12</span>
     </div>
     <div className="ide-body">
       <pre>
@@ -210,14 +189,17 @@ const IdeBlock = () => (
 <span className="tok-var">report</span>{" "}<span className="tok-op">=</span>{" "}<span className="tok-var">results</span>.<span className="tok-fn">export_pdf</span>{"(\n"}
 {"  "}<span className="tok-pm">sections</span><span className="tok-op">=</span>{"["}<span className="tok-str">"security"</span>{", "}<span className="tok-str">"load"</span>{", "}<span className="tok-str">"ui_ux"</span>{"]\n)\n\n"}
 <span className="tok-fn">print</span>{"("}<span className="tok-str">f"Scan done: {"{"}<span className="tok-var">results</span>.<span className="tok-var">total_checks</span>{"}"} checks"</span>{")\n"}
-<span className="tok-cm"># → Scan done: 300+ checks</span><span className="ide-cursor"/>
+<span className="tok-cm"># Scan done: 300+ checks</span><span className="ide-cursor"/>
       </pre>
     </div>
   </div>
 );
 
 /* ─── Contact form ───────────────────────────────────────────────────────── */
-const issueTypes = ["Hire Request", "Portfolio Feedback", "Bug Found", "Collaboration", "Other"];
+const issueTypes = ["Hire Request","Portfolio Feedback","Bug Found","Collaboration","Other"];
+function ChevronDown({ style }: { style?: React.CSSProperties }) {
+  return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}><polyline points="6 9 12 15 18 9"/></svg>;
+}
 const ContactForm = () => {
   const [type, setType] = useState("Hire Request");
   const [sent, setSent]  = useState(false);
@@ -228,452 +210,557 @@ const ContactForm = () => {
     fd.append("_captcha", "false");
     fd.append("issue_type", type);
     fetch("https://formsubmit.co/ajax/milrad.johnathan19@gmail.com", {
-      method: "POST", body: fd, headers: { Accept: "application/json" },
+      method:"POST", body:fd, headers:{ Accept:"application/json" },
     }).then(() => setSent(true)).catch(() => setSent(true));
   };
   if (sent) return (
-    <div style={{ textAlign: "center", padding: "2rem 0" }}>
-      <div style={{ fontSize: "2rem", marginBottom: "10px" }}>✅</div>
-      <p style={{ fontWeight: 700, color: BOLD, marginBottom: "6px" }}>Message delivered.</p>
-      <p style={{ color: TEXT, fontSize: "0.85rem" }}>I'll get back to you soon.</p>
+    <div style={{ textAlign:"center", padding:"2rem 0" }}>
+      <div style={{ fontSize:"2rem", marginBottom:"10px" }}>✅</div>
+      <p style={{ fontWeight:600, color:W, marginBottom:"6px" }}>Message delivered.</p>
+      <p style={{ color:W60, fontSize:"0.85rem" }}>I'll get back to you soon.</p>
     </div>
   );
   return (
-    <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <div className="contact-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
+    <form onSubmit={submit} style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:"10px" }}>
         <div>
-          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Type</div>
-          <div style={{ position: "relative" }}>
+          <div style={{ fontSize:"0.68rem", fontWeight:600, color:W50, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Type</div>
+          <div style={{ position:"relative" }}>
             <select value={type} onChange={e => setType(e.target.value)} className="noir-input"
-              style={{ appearance: "none", paddingRight: "28px", cursor: "pointer" }}
-            >
+              style={{ appearance:"none", paddingRight:"28px", cursor:"pointer" }}>
               {issueTypes.map(t => <option key={t}>{t}</option>)}
             </select>
-            <ChevronDown style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", width: "12px", color: MUTED, pointerEvents: "none" }} />
+            <ChevronDown style={{ position:"absolute", right:"10px", top:"50%", transform:"translateY(-50%)", width:"12px", color:W50, pointerEvents:"none" }} />
           </div>
         </div>
         <div>
-          <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Name</div>
+          <div style={{ fontSize:"0.68rem", fontWeight:600, color:W50, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Name</div>
           <input name="name" required placeholder="Your name" className="noir-input" />
         </div>
       </div>
       <div>
-        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</div>
+        <div style={{ fontSize:"0.68rem", fontWeight:600, color:W50, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Email</div>
         <input name="email" type="email" required placeholder="your@email.com" className="noir-input" />
       </div>
       <div>
-        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: MUTED, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Message</div>
-        <textarea name="message" required rows={4} placeholder="Tell me about your project..." className="noir-input" style={{ resize: "vertical", minHeight: "80px" }} />
+        <div style={{ fontSize:"0.68rem", fontWeight:600, color:W50, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Message</div>
+        <textarea name="message" required rows={4} placeholder="Tell me about your project..." className="noir-input" style={{ resize:"vertical", minHeight:"80px" }} />
       </div>
-      <button type="submit"
-        style={{ padding: "10px 24px", borderRadius: "9px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.85rem", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "7px", alignSelf: "flex-start", transition: "opacity 0.15s, box-shadow 0.15s" }}
-        onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 28px rgba(0,229,255,0.6)"; }}
-        onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
-      >Send Message <Send style={{ width: "13px", height: "13px" }} /></button>
+      <button type="submit" className="cta-btn lgs"
+        style={{ padding:"11px 24px", borderRadius:"99px", color:W, fontWeight:500, fontSize:"0.85rem", border:"none", cursor:"pointer",
+          display:"inline-flex", alignItems:"center", gap:"7px", alignSelf:"flex-start",
+          transition:"transform 0.2s", fontFamily:"'Poppins',sans-serif" }}
+        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
+        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+      >Send Message <Send style={{ width:"13px", height:"13px" }} /></button>
     </form>
   );
 };
-
-/* ─── Missing import shim ────────────────────────────────────────────────── */
-function ChevronDown({ style }: { style?: React.CSSProperties }) {
-  return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}><polyline points="6 9 12 15 18 9"/></svg>;
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PAGE
 ══════════════════════════════════════════════════════════════════════════ */
 export default function Page() {
   const isMobile = useIsMobile();
-
-  /* refs for 3D scene */
   const scrollProgressRef = useRef<number>(0);
   const isHoveredRef      = useRef<boolean>(false);
+  const shockRef          = useRef<HTMLDivElement>(null);
+  const [webglOk] = useState(() => typeof window !== "undefined" && hasWebGL());
 
-  /* WebGL availability */
-  const [webglOk] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return hasWebGL();
-  });
-
-  /* shockwave element ref */
-  const shockRef = useRef<HTMLDivElement>(null);
-
-  /* ── Magnetic cursor ── */
+  /* Magnetic cursor */
   const cursorX     = useMotionValue(-100);
   const cursorY     = useMotionValue(-100);
   const cursorScale = useMotionValue(1);
-  const springX     = useSpring(cursorX,     { stiffness: 280, damping: 28 });
-  const springY     = useSpring(cursorY,     { stiffness: 280, damping: 28 });
-  const sScale      = useSpring(cursorScale, { stiffness: 380, damping: 30 });
+  const springX     = useSpring(cursorX,     { stiffness:280, damping:28 });
+  const springY     = useSpring(cursorY,     { stiffness:280, damping:28 });
+  const sScale      = useSpring(cursorScale, { stiffness:380, damping:30 });
   const magnetElRef = useRef<Element | null>(null);
-
   useEffect(() => {
     if (isMobile) return;
     const move = (e: MouseEvent) => {
-      const magEl = magnetElRef.current;
-      if (magEl) {
-        const r = magEl.getBoundingClientRect();
-        cursorX.set(e.clientX + (r.left + r.width / 2  - e.clientX) * 0.30);
-        cursorY.set(e.clientY + (r.top  + r.height / 2 - e.clientY) * 0.30);
-      } else {
-        cursorX.set(e.clientX);
-        cursorY.set(e.clientY);
-      }
+      const m = magnetElRef.current;
+      if (m) { const r = m.getBoundingClientRect();
+        cursorX.set(e.clientX+(r.left+r.width/2-e.clientX)*0.3);
+        cursorY.set(e.clientY+(r.top+r.height/2-e.clientY)*0.3);
+      } else { cursorX.set(e.clientX); cursorY.set(e.clientY); }
     };
     const over = (e: MouseEvent) => {
       const el = (e.target as Element).closest("a,button,.mag-target");
-      if (el) { magnetElRef.current = el; cursorScale.set(2.2); }
-      else    { magnetElRef.current = null; cursorScale.set(1); }
+      if (el) { magnetElRef.current=el; cursorScale.set(2.2); }
+      else    { magnetElRef.current=null; cursorScale.set(1); }
     };
-    window.addEventListener("mousemove", move, { passive: true });
-    window.addEventListener("mouseover", over, { passive: true });
-    return () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseover", over); };
+    window.addEventListener("mousemove", move, { passive:true });
+    window.addEventListener("mouseover", over, { passive:true });
+    return () => { window.removeEventListener("mousemove",move); window.removeEventListener("mouseover",over); };
   }, [isMobile, cursorX, cursorY, cursorScale]);
 
-  /* ── Wire isHoveredRef to project links ── */
+  /* Scroll progress */
   useEffect(() => {
     if (!webglOk) return;
-    const onEnter = () => { isHoveredRef.current = true; };
-    const onLeave = () => { isHoveredRef.current = false; };
-    const targets = document.querySelectorAll<HTMLElement>(
-      '#projects a, #projects button, a[href*="behemothqa"], a[href*="github"][href*="Keves"]'
-    );
-    targets.forEach(el => { el.addEventListener("mouseenter", onEnter); el.addEventListener("mouseleave", onLeave); });
-    return () => { targets.forEach(el => { el.removeEventListener("mouseenter", onEnter); el.removeEventListener("mouseleave", onLeave); }); };
-  }, [webglOk]);
-
-  /* ── Scroll progress → 5 sections × 0.2 = 1.0 ── */
-  useEffect(() => {
-    if (!webglOk) return;
-    const makeTrigger = (id: string, base: number) => {
-      const el = document.getElementById(id);
-      if (!el) return null;
-      return ScrollTrigger.create({
-        trigger: el, start: "top 90%", end: "bottom 10%", scrub: 0.6,
-        onUpdate: (self) => { scrollProgressRef.current = base + self.progress * 0.2; },
-      });
+    const make = (id: string, base: number) => {
+      const el = document.getElementById(id); if (!el) return null;
+      return ScrollTrigger.create({ trigger:el, start:"top 90%", end:"bottom 10%", scrub:0.6,
+        onUpdate: s => { scrollProgressRef.current = base + s.progress*0.2; } });
     };
-    const triggers = [
-      makeTrigger("hero",     0.00),
-      makeTrigger("about",    0.20),
-      makeTrigger("projects", 0.40),
-      makeTrigger("skills",   0.60),
-      makeTrigger("contact",  0.80),
+    const ts = [
+      make("hero",0.00), make("about",0.20), make("projects",0.40),
+      make("skills",0.60), make("contact",0.80),
     ].filter(Boolean);
-    return () => { triggers.forEach(t => t?.kill()); };
+    return () => { ts.forEach(t => t?.kill()); };
   }, [webglOk]);
 
-  /* ── GSAP explosion reveals per section ── */
+  /* GSAP explosion reveals */
   useEffect(() => {
-    const localTweens: gsap.core.Tween[] = [];
-
-    document.querySelectorAll<HTMLElement>(".reveal-section").forEach((section) => {
+    const tweens: gsap.core.Tween[] = [];
+    document.querySelectorAll<HTMLElement>(".reveal-section").forEach(section => {
       const items = section.querySelectorAll<HTMLElement>(".reveal-item");
       if (!items.length) return;
-
-      localTweens.push(gsap.fromTo(items,
-        { opacity: 0, y: 60, scale: 0.94 },
-        {
-          opacity: 1, y: 0, scale: 1,
-          duration: 0.85,
-          stagger: 0.09,
-          ease: "power3.out",
+      tweens.push(gsap.fromTo(items,
+        { opacity:0, y:56, scale:0.95 },
+        { opacity:1, y:0, scale:1, duration:0.82, stagger:0.09, ease:"power3.out",
           scrollTrigger: {
-            trigger: section,
-            start: "top 78%",
-            toggleActions: "play none none none",
+            trigger:section, start:"top 78%", toggleActions:"play none none none",
             onEnter: () => {
-              // Shockwave ring flash
-              const sw = shockRef.current;
-              if (!sw) return;
-              sw.style.opacity = "1";
-              sw.style.transform = "translate(-50%, -50%) scale(0)";
-              sw.style.transition = "none";
+              const sw = shockRef.current; if (!sw) return;
+              sw.style.opacity="1"; sw.style.transform="translate(-50%,-50%) scale(0)";
+              sw.style.transition="none";
               requestAnimationFrame(() => {
-                sw.style.transition = "transform 0.9s cubic-bezier(0.2,0,0.6,1), opacity 0.9s ease";
-                sw.style.transform = "translate(-50%, -50%) scale(8)";
-                sw.style.opacity = "0";
+                sw.style.transition="transform 0.9s cubic-bezier(0.2,0,0.6,1), opacity 0.9s ease";
+                sw.style.transform="translate(-50%,-50%) scale(8)"; sw.style.opacity="0";
               });
             },
           },
         }
       ));
-
-      // Section label clips in from left
-      const label = section.querySelector<HTMLElement>(".section-label");
-      if (label) {
-        localTweens.push(gsap.fromTo(label,
-          { clipPath: "inset(0 100% 0 0)" },
-          {
-            clipPath: "inset(0 0% 0 0)",
-            duration: 0.7, ease: "power2.out",
-            scrollTrigger: { trigger: section, start: "top 85%", toggleActions: "play none none none" },
-          }
-        ));
-      }
+      const label = section.querySelector<HTMLElement>(".sec-label");
+      if (label) tweens.push(gsap.fromTo(label,
+        { clipPath:"inset(0 100% 0 0)" },
+        { clipPath:"inset(0 0% 0 0)", duration:0.7, ease:"power2.out",
+          scrollTrigger:{ trigger:section, start:"top 85%", toggleActions:"play none none none" } }
+      ));
     });
-
-    return () => { localTweens.forEach(tw => { tw.scrollTrigger?.kill(); tw.kill(); }); };
+    return () => { tweens.forEach(tw => { tw.scrollTrigger?.kill(); tw.kill(); }); };
   }, []);
 
-  /* ── Button helpers ── */
-  const BtnPrimary = useCallback(({ href, children, external }: { href?: string; children: React.ReactNode; external?: boolean }) => (
-    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}
-      style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "11px 24px", borderRadius: "10px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", transition: "opacity 0.15s, box-shadow 0.15s" }}
-      onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 32px rgba(0,229,255,0.65)"; }}
-      onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
-    >{children}</a>
-  ), []);
+  const scrollTo = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior:"smooth" });
+  };
 
-  const BtnGhost = useCallback(({ href, children, external }: { href: string; children: React.ReactNode; external?: boolean }) => (
-    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}
-      style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "11px 22px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", color: TEXT, fontWeight: 600, fontSize: "0.85rem", textDecoration: "none", transition: "border-color 0.2s, color 0.2s" }}
-      onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = ACC; el.style.color = BOLD; }}
-      onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = "rgba(255,255,255,0.12)"; el.style.color = TEXT; }}
-    >{children}</a>
-  ), []);
-
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     RENDER
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   return (
     <>
-      {/* ── Fixed 3D canvas — always-visible background ── */}
-      {webglOk && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+      {/* Fixed 3D canvas */}
+      {webglOk ? (
+        <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none" }}>
           <Suspense fallback={null}>
             <WebGLGuard>
               <MonolithScene scrollProgress={scrollProgressRef} isHovered={isHoveredRef} />
             </WebGLGuard>
           </Suspense>
         </div>
-      )}
-      {!webglOk && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 0, background: "linear-gradient(135deg, #07080e 0%, #0c0e1c 100%)" }} />
+      ) : (
+        <div style={{ position:"fixed", inset:0, zIndex:0, background:"linear-gradient(135deg,#07080e 0%,#0c0e1c 100%)" }} />
       )}
 
-      {/* ── Shockwave ring ── */}
+      {/* Shockwave ring */}
       <div ref={shockRef} style={{
-        position: "fixed", left: "50%", top: "50%", zIndex: 5,
-        width: "80px", height: "80px", borderRadius: "50%",
-        border: "2px solid rgba(0,229,255,0.55)",
-        transform: "translate(-50%, -50%) scale(0)",
-        opacity: 0, pointerEvents: "none",
-        boxShadow: "0 0 40px rgba(0,229,255,0.3), inset 0 0 20px rgba(0,229,255,0.1)",
+        position:"fixed", left:"50%", top:"50%", zIndex:5,
+        width:"80px", height:"80px", borderRadius:"50%",
+        border:"2px solid rgba(255,255,255,0.25)",
+        transform:"translate(-50%,-50%) scale(0)", opacity:0, pointerEvents:"none",
       }} />
 
-      {/* ── Magnetic cursor ── */}
+      {/* Magnetic cursor */}
       {!isMobile && (
         <motion.div aria-hidden style={{
-          position: "fixed", top: 0, left: 0, zIndex: 999, pointerEvents: "none",
-          x: springX, y: springY, scale: sScale,
-          translateX: "-50%", translateY: "-50%",
-          width: 18, height: 18, borderRadius: "50%",
-          border: "1.5px solid rgba(0,229,255,0.65)",
-          background: "rgba(0,229,255,0.05)",
-          backdropFilter: "blur(2px)",
+          position:"fixed", top:0, left:0, zIndex:999, pointerEvents:"none",
+          x:springX, y:springY, scale:sScale, translateX:"-50%", translateY:"-50%",
+          width:18, height:18, borderRadius:"50%",
+          border:"1.5px solid rgba(255,255,255,0.40)",
+          background:"rgba(255,255,255,0.04)", backdropFilter:"blur(2px)",
         }} />
       )}
 
-      {/* ── Ambient effects ── */}
-      <div className="noise"   aria-hidden />
+      {/* Noise + vignette */}
+      <div className="noise" aria-hidden />
       <div className="vignette" aria-hidden />
-      <div className="amb amb-1" />
-      <div className="amb amb-2" />
-      <div className="amb amb-3" />
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          NAV
-      ══════════════════════════════════════════════════════════════════════ */}
-      <nav className="nav-glass" style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        display: "flex", alignItems: "center", flexWrap: "wrap", justifyContent: "space-between",
-        padding: "0 32px", minHeight: "54px",
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          FIXED NAV (scrolled state)
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <nav className="lgs" style={{
+        position:"fixed", top:0, left:0, right:0, zIndex:100,
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        padding:"0 2rem", minHeight:"52px",
       }}>
-        <motion.span initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          style={{ fontWeight: 900, fontSize: "0.95rem", color: BOLD, letterSpacing: "-0.03em", lineHeight: "54px" }}
-        >Johnatan<span style={{ color: ACC }}>.</span></motion.span>
-
-        <div className="nav-section-links" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        <span style={{ fontWeight:600, fontSize:"1rem", color:W, letterSpacing:"-0.03em", fontFamily:"'Poppins',sans-serif" }}>
+          Johnatan<span style={{ color:W60 }}>.</span>
+        </span>
+        <div style={{ display:"flex", gap:"4px" }}>
           {["About","Projects","Skills","Contact"].map(l => (
-            <a key={l} href={`#${l.toLowerCase()}`}
-              onClick={e => { e.preventDefault(); document.getElementById(l.toLowerCase())?.scrollIntoView({ behavior: "smooth" }); }}
-              style={{ fontSize: "0.8rem", color: MUTED, textDecoration: "none", padding: "4px 10px", borderRadius: "6px", transition: "color 0.15s, background 0.15s" }}
-              onMouseEnter={e => { const el = e.currentTarget; el.style.color = BOLD; el.style.background = "rgba(255,255,255,0.05)"; }}
-              onMouseLeave={e => { const el = e.currentTarget; el.style.color = MUTED; el.style.background = "transparent"; }}
+            <a key={l} href={`#${l.toLowerCase()}`} onClick={scrollTo(l.toLowerCase())}
+              style={{ fontSize:"0.8rem", color:W50, textDecoration:"none", padding:"4px 10px",
+                borderRadius:"6px", transition:"color 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.color=W)}
+              onMouseLeave={e => (e.currentTarget.style.color=W50)}
             >{l}</a>
           ))}
         </div>
-
         <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-          className="nav-behemoth"
-          style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", borderRadius: "8px", background: A_DIM, border: "1px solid rgba(0,229,255,0.20)", color: ACC, fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", transition: "background 0.15s", flexShrink: 0 }}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,229,255,0.15)")}
-          onMouseLeave={e => (e.currentTarget.style.background = A_DIM)}
-        >BehemothQA <ExternalLink style={{ width: "10px", height: "10px" }} /></a>
+          className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+            padding:"6px 14px", borderRadius:"99px", color:W80, fontSize:"0.78rem", fontWeight:500, textDecoration:"none" }}
+        >BehemothQA <ExternalLink style={{ width:"10px", height:"10px" }} /></a>
       </nav>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          HERO — Full viewport, canvas shows through
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          HERO — Two-panel split (Bloom layout)
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="hero" style={{
-        position: "relative", zIndex: 1,
-        height: "100svh", minHeight: "600px",
-        display: "flex", flexDirection: "column",
-        alignItems: "flex-start", justifyContent: "center",
-        padding: "0 clamp(1.5rem,6vw,5rem)", paddingTop: "54px",
+        position:"relative", zIndex:1, minHeight:"100svh",
+        display:"flex", flexDirection:"row",
       }}>
-        {/* Left gradient veil for text legibility */}
+        {/* ── LEFT PANEL 52% ── */}
         <div style={{
-          position: "absolute", inset: 0,
-          background: "radial-gradient(ellipse 75% 100% at 15% 50%, rgba(5,5,8,0.52) 0%, transparent 65%)",
-          pointerEvents: "none",
-        }} />
-
-        {/* Invisible hover zone for obelisk interaction */}
-        {webglOk && !isMobile && (
-          <div style={{
-            position: "absolute", right: "22%", top: "50%",
-            width: "clamp(120px,18vw,220px)", height: "clamp(240px,36vw,440px)",
-            transform: "translateY(-50%)", cursor: "none", zIndex: 1,
-            pointerEvents: "auto", background: "transparent",
+          position:"relative", width: isMobile ? "100%" : "52%",
+          display:"flex", flexDirection:"column",
+          padding: isMobile ? "1rem" : "1.5rem",
+          paddingTop: "64px",
+        }}>
+          {/* liquid-glass-strong overlay */}
+          <div className="lgs bloom-panel" style={{
+            position:"absolute",
+            inset: isMobile ? "0.5rem" : "1rem 0.75rem 1rem 1rem",
+            borderRadius:"1.75rem", zIndex:0,
           }} />
-        )}
 
-        {/* Hero text content */}
-        <div style={{ position: "relative", zIndex: 2, maxWidth: "min(700px,90vw)", pointerEvents: "auto" }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.5rem" }}
-          >
-            <span className="live-dot" style={{ background: G, boxShadow: `0 0 6px ${G}` }} />
-            <span style={{ fontSize: "0.72rem", fontWeight: 700, color: G, textTransform: "uppercase", letterSpacing: "0.18em" }}>Available for Work</span>
-          </motion.div>
+          {/* Content sits above overlay */}
+          <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", height:"100%",
+            padding: isMobile ? "1.25rem" : "2rem 2.25rem" }}>
 
-          <h1 style={{
-            fontSize: "clamp(2.8rem,7.5vw,5.6rem)",
-            fontWeight: 800, letterSpacing: "-0.05em", lineHeight: 0.93,
-            color: BOLD, marginBottom: "1.6rem",
-            fontFamily: "'Poppins', sans-serif",
-          }}>
-            <SplitText text="Johnatan" />
-            <br />
-            <SplitText text="Milrad." style={{ color: ACC, animation: "text-glow 3.5s ease-in-out infinite" }} />
-          </h1>
+            {/* Nav row inside panel */}
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"auto" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <span className="live-dot" style={{ background:G, boxShadow:`0 0 6px ${G}` }} />
+                <span style={{ fontSize:"0.72rem", fontWeight:600, color:G, textTransform:"uppercase", letterSpacing:"0.16em" }}>Available for Work</span>
+              </div>
+              <button className="lg-pill" style={{ display:"flex", alignItems:"center", gap:"6px",
+                padding:"7px 14px", borderRadius:"99px", color:W80, fontSize:"0.78rem",
+                background:"transparent", border:"none", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+                <Menu size={14} /> Menu
+              </button>
+            </div>
 
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.44, duration: 0.6 }}
-            style={{ fontSize: "clamp(0.9rem,2vw,1.1rem)", color: TEXT, lineHeight: 1.7, maxWidth: "44ch", marginBottom: "2.5rem", fontWeight: 400 }}
-          >
-            Manual QA graduate with <em style={{ fontFamily: "'Source Serif 4', serif", fontStyle: "italic", color: "rgba(248,250,252,0.75)" }}>UI/UX sensibility</em> and a precise eye for broken software, catching what automated tools miss.
-          </motion.p>
+            {/* Hero center */}
+            <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center",
+              gap: isMobile ? "1.5rem" : "2rem", padding:"2rem 0" }}>
 
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.56, duration: 0.5 }}
-            style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
-          >
-            <BtnPrimary href="#about">View Work <ArrowUpRight style={{ width: "14px", height: "14px" }} /></BtnPrimary>
-            <BtnGhost href="#contact">Get in Touch</BtnGhost>
-          </motion.div>
+              <motion.h1 initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.2, duration:0.65 }}
+                style={{ fontSize:"clamp(3rem,7.5vw,5.6rem)", fontWeight:500,
+                  letterSpacing:"-0.05em", lineHeight:0.93, color:W, margin:0,
+                  fontFamily:"'Poppins',sans-serif" }}
+              >
+                Johnatan<br />
+                <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic",
+                  fontWeight:300, color:W80 }}>Milrad.</em>
+              </motion.h1>
+
+              <motion.p initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.38, duration:0.55 }}
+                style={{ fontSize:"clamp(0.9rem,1.8vw,1.05rem)", color:W60,
+                  lineHeight:1.7, maxWidth:"38ch", margin:0, fontWeight:400 }}
+              >
+                Manual QA graduate with <em style={{ fontFamily:"'Source Serif 4',serif",
+                  fontStyle:"italic", color:W80 }}>UI/UX sensibility</em> and a precise eye
+                for broken software, catching what automated tools miss.
+              </motion.p>
+
+              {/* CTA */}
+              <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.5, duration:0.5 }}
+                style={{ display:"flex", gap:"12px", flexWrap:"wrap", alignItems:"center" }}
+              >
+                <a href="#about" onClick={scrollTo("about")}
+                  className="lgs cta-btn"
+                  style={{ display:"inline-flex", alignItems:"center", gap:"10px",
+                    padding:"13px 24px", borderRadius:"99px", color:W, fontWeight:500,
+                    fontSize:"0.9rem", textDecoration:"none", transition:"transform 0.2s",
+                    fontFamily:"'Poppins',sans-serif" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >
+                  View My Work
+                  <div style={{ width:"28px", height:"28px", borderRadius:"50%",
+                    background:W10, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <ArrowRight size={13} color={W} />
+                  </div>
+                </a>
+                <a href="#contact" onClick={scrollTo("contact")}
+                  className="lg-pill"
+                  style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                    padding:"13px 22px", borderRadius:"99px", color:W60,
+                    fontSize:"0.9rem", textDecoration:"none", transition:"transform 0.2s, color 0.15s",
+                    fontFamily:"'Poppins',sans-serif", border:"none" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform="scale(1.04)"; e.currentTarget.style.color=W; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.color=W60; }}
+                >
+                  Get in Touch
+                </a>
+              </motion.div>
+
+              {/* Skill pills */}
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+                transition={{ delay:0.62, duration:0.5 }}
+                style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}
+              >
+                {["Manual Testing","Security QA","UI/UX Review"].map(p => (
+                  <span key={p} className="lg-pill"
+                    style={{ padding:"6px 14px", borderRadius:"99px", fontSize:"0.75rem",
+                      color:W80, whiteSpace:"nowrap" }}
+                  >{p}</span>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Bottom quote */}
+            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+              transition={{ delay:0.8, duration:0.6 }}
+              style={{ marginTop:"auto", paddingTop:"1.5rem" }}
+            >
+              <div style={{ fontSize:"0.62rem", letterSpacing:"0.22em",
+                textTransform:"uppercase", color:W50, marginBottom:"8px" }}>PORTFOLIO 2025</div>
+              <p style={{ fontSize:"0.95rem", color:W80, margin:"0 0 10px",
+                fontFamily:"'Poppins',sans-serif", fontWeight:400, lineHeight:1.55 }}>
+                "A <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic" }}>precise eye</em>{" "}
+                finds what automated tools miss."
+              </p>
+              <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+                <div style={{ flex:1, height:"1px", background:W25 }} />
+                <span style={{ fontSize:"0.62rem", letterSpacing:"0.14em", color:W50 }}>JOHNATAN MILRAD</span>
+                <div style={{ flex:1, height:"1px", background:W25 }} />
+              </div>
+            </motion.div>
+          </div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.6 }}
-          style={{ position: "absolute", bottom: "2.5rem", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", zIndex: 2, pointerEvents: "none" }}
-        >
-          <span style={{ fontSize: "0.62rem", fontWeight: 600, color: MUTED, letterSpacing: "0.18em", textTransform: "uppercase" }}>scroll</span>
-          <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-            style={{ width: "1px", height: "32px", background: `linear-gradient(to bottom, ${ACC}, transparent)` }}
-          />
-        </motion.div>
+        {/* ── RIGHT PANEL 48% — desktop only ── */}
+        {!isMobile && (
+          <div style={{
+            width:"48%", display:"flex", flexDirection:"column",
+            padding:"5rem 1.5rem 1.5rem 0.75rem", gap:"1rem",
+          }}>
+            {/* Top bar: social + BehemothQA */}
+            <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }}
+              transition={{ delay:0.3, duration:0.5 }}
+              style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}
+            >
+              <div className="lg-pill" style={{ display:"flex", alignItems:"center", gap:"10px",
+                padding:"8px 16px", borderRadius:"99px" }}>
+                <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2"
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ color:W80, fontSize:"0.78rem", textDecoration:"none",
+                    transition:"color 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color=W)}
+                  onMouseLeave={e => (e.currentTarget.style.color=W80)}
+                >LinkedIn</a>
+                <div style={{ width:"1px", height:"12px", background:W25 }} />
+                <a href="https://github.com/Keves1337"
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ color:W80, fontSize:"0.78rem", textDecoration:"none",
+                    transition:"color 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color=W)}
+                  onMouseLeave={e => (e.currentTarget.style.color=W80)}
+                >GitHub</a>
+                <ArrowRight size={13} color={W50} />
+              </div>
+              <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                className="lg-pill icon-btn"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center",
+                  width:"36px", height:"36px", borderRadius:"50%", textDecoration:"none",
+                  transition:"transform 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.transform="scale(1.08)")}
+                onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+              >
+                <Sparkles size={15} color={W} />
+              </a>
+            </motion.div>
+
+            {/* About / community card */}
+            <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
+              transition={{ delay:0.42, duration:0.55 }}
+              className="lg" style={{ borderRadius:"1.5rem", padding:"1.25rem", maxWidth:"240px" }}
+            >
+              <p style={{ fontSize:"0.85rem", fontWeight:500, color:W, marginBottom:"6px",
+                fontFamily:"'Poppins',sans-serif" }}>Johnatan Milrad</p>
+              <p style={{ fontSize:"0.75rem", color:W60, lineHeight:1.6, margin:0 }}>
+                Manual QA Engineer with UI/UX design expertise. Building precise test processes that catch what automated tools miss.
+              </p>
+            </motion.div>
+
+            {/* Feature section — bottom of right panel */}
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+              transition={{ delay:0.56, duration:0.6 }}
+              className="lg" style={{ marginTop:"auto", borderRadius:"2.5rem", padding:"1.25rem" }}
+            >
+              {/* Two side-by-side cards */}
+              <div style={{ display:"flex", gap:"0.75rem", marginBottom:"0.75rem" }}>
+                <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                  className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
+                    textDecoration:"none", display:"block", transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >
+                  <Shield size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
+                  <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
+                    fontFamily:"'Poppins',sans-serif" }}>BehemothQA</div>
+                  <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>Security platform</div>
+                </a>
+                <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
+                  className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
+                    textDecoration:"none", display:"block", transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >
+                  <FileText size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
+                  <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
+                    fontFamily:"'Poppins',sans-serif" }}>Test Reports</div>
+                  <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>QA documentation</div>
+                </a>
+              </div>
+
+              {/* Bottom feature card with photo */}
+              <div className="lg" style={{ borderRadius:"1.5rem", padding:"1rem",
+                display:"flex", gap:"0.875rem", alignItems:"center" }}>
+                <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
+                  style={{ width:"96px", height:"64px", objectFit:"cover", objectPosition:"50% 15%",
+                    borderRadius:"0.875rem", flexShrink:0,
+                    filter:"grayscale(15%) contrast(1.05)" }}
+                />
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
+                    fontFamily:"'Poppins',sans-serif", marginBottom:"3px" }}>Johnatan Milrad</div>
+                  <div style={{ fontSize:"0.72rem", color:W60, lineHeight:1.4 }}>QA Engineer + UI/UX Designer</div>
+                </div>
+                <a href="#contact" onClick={scrollTo("contact")}
+                  className="lg" style={{ width:"32px", height:"32px", borderRadius:"50%",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    color:W, fontSize:"1.2rem", textDecoration:"none", flexShrink:0,
+                    transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.1)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >+</a>
+              </div>
+            </motion.div>
+
+            {/* Scroll indicator */}
+            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+              transition={{ delay:1.1, duration:0.6 }}
+              style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
+                paddingTop:"0.5rem", pointerEvents:"none" }}
+            >
+              <span style={{ fontSize:"0.58rem", fontWeight:600, color:W25,
+                letterSpacing:"0.2em", textTransform:"uppercase" }}>scroll</span>
+              <motion.div animate={{ y:[0,8,0] }} transition={{ repeat:Infinity, duration:1.6, ease:"easeInOut" }}
+                style={{ width:"1px", height:"28px", background:`linear-gradient(to bottom,${W50},transparent)` }}
+              />
+            </motion.div>
+          </div>
+        )}
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ABOUT — Section 2 | Phase B: obelisk rotates, neon intensifies
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          ABOUT
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="about" className="reveal-section" style={{
-        position: "relative", zIndex: 1,
-        minHeight: "100svh",
-        display: "flex", alignItems: "center",
-        padding: "80px clamp(1.5rem,6vw,5rem)",
+        position:"relative", zIndex:1, minHeight:"100svh",
+        display:"flex", alignItems:"center",
+        padding:"80px clamp(1.5rem,6vw,4.5rem)",
       }}>
-        {/* Left veil */}
-        <div className="section-left-veil" />
+        <div className="sec-veil" />
+        <div style={{ position:"relative", zIndex:2, width:"100%", maxWidth:"1100px", margin:"0 auto" }}>
 
-        <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: "1140px", margin: "0 auto" }}>
-          {/* Section label */}
-          <div className="section-label" style={{ marginBottom: "2.5rem" }}>
-            <span className="section-num">01</span>
-            <span className="section-slash">/</span>
-            <span className="section-title-text">ABOUT</span>
+          <div className="sec-label" style={{ marginBottom:"2.5rem" }}>
+            <span className="sec-num">01</span>
+            <span className="sec-slash">/</span>
+            <span className="sec-title">ABOUT</span>
           </div>
 
           <div className="about-grid">
-            {/* Left: bio */}
             <div>
-              <h2 className="reveal-item cinematic-heading" style={{ marginBottom: "1.5rem" }}>
-                The <em>Precise Eye</em><br />for <span style={{ color: ACC }}>Broken</span> Software.
+              <h2 className="reveal-item sec-heading" style={{ marginBottom:"1.5rem" }}>
+                The <em>Precise Eye</em><br />for Broken Software.
               </h2>
-
-              <p className="reveal-item" style={{ fontSize: "0.93rem", color: TEXT, lineHeight: 1.8, marginBottom: "1rem" }}>
-                I'm a <strong style={{ color: BOLD }}>Manual QA graduate</strong> who came to software through design, building skills across <strong style={{ color: BOLD }}>Figma, Photoshop, and Illustrator</strong> with a strong UI/UX sensibility. That design background sharpens my eye for what's visually broken, flows that feel wrong, and UX patterns that don't serve the user.
+              <p className="reveal-item" style={{ fontSize:"0.92rem", color:W60, lineHeight:1.8, marginBottom:"1rem" }}>
+                I'm a <strong style={{ color:W, fontWeight:500 }}>Manual QA graduate</strong> who came to software through design, building skills across{" "}
+                <strong style={{ color:W, fontWeight:500 }}>Figma, Photoshop, and Illustrator</strong> with a strong UI/UX sensibility. That design background sharpens my eye for what's visually broken, flows that feel wrong, and UX patterns that don't serve the user.
               </p>
-              <p className="reveal-item" style={{ fontSize: "0.93rem", color: TEXT, lineHeight: 1.8, marginBottom: "2rem" }}>
-                On top of coursework I built <strong style={{ color: BOLD }}>BehemothQA</strong> independently, getting hands-on with <strong style={{ color: BOLD }}>Jira, Postman, GitHub</strong>, and security testing in the process.
+              <p className="reveal-item" style={{ fontSize:"0.92rem", color:W60, lineHeight:1.8, marginBottom:"2rem" }}>
+                On top of coursework I built <strong style={{ color:W, fontWeight:500 }}>BehemothQA</strong> independently, getting hands-on with{" "}
+                <strong style={{ color:W, fontWeight:500 }}>Jira, Postman, GitHub</strong>, and security testing in the process.
               </p>
-
-              {/* Stats */}
-              <div className="reveal-item" style={{ display: "flex", gap: "2.5rem", marginBottom: "2rem", flexWrap: "wrap" }}>
+              <div className="reveal-item" style={{ display:"flex", gap:"2.5rem", flexWrap:"wrap", marginBottom:"2rem" }}>
                 {[
-                  { n: "300+", l: "checks / run",   c: ACC },
-                  { n: "6",    l: "attack modules",  c: "#67e8f9" },
-                  { n: "4",    l: "severity tiers",  c: G },
+                  { n:"300+", l:"checks / run"  },
+                  { n:"6",    l:"attack modules" },
+                  { n:"4",    l:"severity tiers" },
                 ].map(s => (
                   <div key={s.n}>
-                    <div style={{ fontSize: "clamp(1.8rem,3.5vw,2.4rem)", fontWeight: 900, color: s.c, letterSpacing: "-0.04em", lineHeight: 1, textShadow: `0 0 30px ${s.c}55` }}>{s.n}</div>
-                    <div style={{ fontSize: "0.72rem", color: MUTED, marginTop: "4px", fontWeight: 500 }}>{s.l}</div>
+                    <div style={{ fontSize:"clamp(1.8rem,3.5vw,2.4rem)", fontWeight:500, color:W,
+                      letterSpacing:"-0.04em", lineHeight:1, fontFamily:"'Poppins',sans-serif" }}>{s.n}</div>
+                    <div style={{ fontSize:"0.72rem", color:W50, marginTop:"4px" }}>{s.l}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Right: glass card */}
             <div className="reveal-item">
-              <div className="glass-panel" style={{ padding: "28px" }}>
+              <div className="lgs" style={{ borderRadius:"1.5rem", padding:"1.75rem", overflow:"hidden" }}>
                 {/* Photo */}
-                <div style={{ position: "relative", width: "100%", height: "200px", borderRadius: "12px", overflow: "hidden", marginBottom: "20px" }}>
+                <div style={{ position:"relative", width:"100%", height:"200px", borderRadius:"1rem",
+                  overflow:"hidden", marginBottom:"1.25rem" }}>
                   <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 15%", filter: "grayscale(25%) contrast(1.1) brightness(0.85)" }}
+                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"50% 15%",
+                      filter:"grayscale(20%) contrast(1.05) brightness(0.88)" }}
                   />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(7,8,14,0.7) 0%, transparent 50%)" }} />
-                  <div style={{ position: "absolute", bottom: "14px", left: "14px" }}>
-                    <span style={{ fontWeight: 700, fontSize: "0.85rem", color: BOLD }}>Johnatan Milrad</span>
-                    <span className="badge" style={{ marginLeft: "8px" }}>QA Engineer</span>
+                  <div style={{ position:"absolute", inset:0,
+                    background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)" }} />
+                  <div style={{ position:"absolute", bottom:"12px", left:"12px" }}>
+                    <span style={{ fontWeight:600, fontSize:"0.82rem", color:W }}>Johnatan Milrad</span>
+                    <span className="badge" style={{ marginLeft:"8px" }}>QA Engineer</span>
                   </div>
-                  <div style={{ position: "absolute", top: "10px", left: "10px", width: "16px", height: "16px", borderTop: `2px solid ${ACC}`, borderLeft: `2px solid ${ACC}`, opacity: 0.7 }} />
                 </div>
 
                 {/* Availability */}
-                <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "18px" }}>
-                  <span className="live-dot" />
-                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: G, textTransform: "uppercase", letterSpacing: "0.14em" }}>Open to Work</span>
+                <div style={{ display:"flex", alignItems:"center", gap:"7px", marginBottom:"1rem" }}>
+                  <span className="live-dot" style={{ background:G, boxShadow:`0 0 6px ${G}` }} />
+                  <span style={{ fontSize:"0.72rem", fontWeight:600, color:G,
+                    textTransform:"uppercase", letterSpacing:"0.14em" }}>Open to Work</span>
                 </div>
 
                 {/* Contact info */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:"9px", marginBottom:"1.25rem" }}>
                   {[
-                    { icon: MapPin, text: "Ashdod, Israel",              href: undefined },
-                    { icon: Mail,   text: "milrad.johnathan19@gmail.com", href: "mailto:milrad.johnathan19@gmail.com" },
-                    { icon: Phone,  text: "+972 523 516 364",             href: "tel:+972523516364" },
-                  ].map(({ icon: Icon, text, href }) => (
-                    <div key={text} style={{ display: "flex", alignItems: "center", gap: "9px", fontSize: "0.8rem", color: TEXT }}>
-                      <div className="contact-icon-pill" style={{ width: "28px", height: "28px", borderRadius: "8px", flexShrink: 0 }}>
-                        <Icon style={{ width: "12px", color: ACC, position: "relative", zIndex: 1 }} />
+                    { icon:MapPin, text:"Ashdod, Israel",              href:undefined },
+                    { icon:Mail,   text:"milrad.johnathan19@gmail.com", href:"mailto:milrad.johnathan19@gmail.com" },
+                    { icon:Phone,  text:"+972 523 516 364",             href:"tel:+972523516364" },
+                  ].map(({ icon:Icon, text, href }) => (
+                    <div key={text} style={{ display:"flex", alignItems:"center", gap:"9px",
+                      fontSize:"0.78rem", color:W60 }}>
+                      <div className="icon-pill">
+                        <Icon style={{ width:"12px", color:W, position:"relative", zIndex:1 }} />
                       </div>
-                      {href ? <a href={href} style={{ color: TEXT, textDecoration: "none" }}>{text}</a> : <span>{text}</span>}
+                      {href ? <a href={href} style={{ color:W60, textDecoration:"none",
+                        transition:"color 0.15s" }}
+                        onMouseEnter={e => (e.currentTarget.style.color=W)}
+                        onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                      >{text}</a> : <span>{text}</span>}
                     </div>
                   ))}
                 </div>
 
-                {/* Cert flip card */}
                 <CertFlipCard />
               </div>
             </div>
@@ -681,204 +768,209 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          PROJECTS — Section 3 | Phase C: EXPLOSION, fragments scatter
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          PROJECTS
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="projects" className="reveal-section" style={{
-        position: "relative", zIndex: 1,
-        minHeight: "130svh",
-        padding: "80px clamp(1.5rem,6vw,5rem)",
+        position:"relative", zIndex:1, minHeight:"130svh",
+        padding:"80px clamp(1.5rem,6vw,4.5rem)",
       }}>
-        <div className="section-left-veil" />
+        <div className="sec-veil" />
+        <div style={{ position:"relative", zIndex:2, maxWidth:"1100px", margin:"0 auto" }}>
 
-        <div style={{ position: "relative", zIndex: 2, maxWidth: "1140px", margin: "0 auto" }}>
-          <div className="section-label" style={{ marginBottom: "3rem" }}>
-            <span className="section-num">02</span>
-            <span className="section-slash">/</span>
-            <span className="section-title-text">PROJECTS</span>
+          <div className="sec-label" style={{ marginBottom:"3rem" }}>
+            <span className="sec-num">02</span>
+            <span className="sec-slash">/</span>
+            <span className="sec-title">PROJECTS</span>
           </div>
 
-          {/* Project 1: BehemothQA */}
-          <div className="reveal-item project-strip">
-            <div className="project-strip-inner">
-              <div className="project-meta">
-                <div className="project-number">01</div>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                    <span className="live-dot" />
-                    <h3 className="project-name">BehemothQA</h3>
-                    <span className="badge" style={{ animation: "float-badge 5s ease-in-out infinite" }}>v2.4</span>
-                  </div>
-                  <p style={{ fontSize: "0.88rem", color: TEXT, lineHeight: 1.7, marginBottom: "14px", maxWidth: "46ch" }}>
-                    Full-scale Python QA platform with 300+ automated security checks per run. Built from scratch with NightMOTH attack modules, WAF bypass, and PDF report generation.
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
-                    {["Python","Security","DDoS","UI/UX QA","NightMOTH","PDF Reports"].map(t => (
-                      <span key={t} className="tech-tag">{t}</span>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                      style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "8px 18px", borderRadius: "8px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.8rem", textDecoration: "none", transition: "opacity 0.15s, box-shadow 0.15s" }}
-                      onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; e.currentTarget.style.boxShadow = "0 0 22px rgba(0,229,255,0.5)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.boxShadow = "none"; }}
-                    >Launch App <ExternalLink style={{ width: "11px", height: "11px" }} /></a>
-                  </div>
+          {/* Project 1 */}
+          <div className="reveal-item proj-card">
+            <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
+              <div className="proj-num">01</div>
+              <div style={{ flex:1 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"8px" }}>
+                  <span className="live-dot" />
+                  <h3 className="proj-name">BehemothQA</h3>
+                  <span className="badge">v2.4</span>
                 </div>
+                <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
+                  Full-scale Python QA platform with 300+ automated security checks per run. Built from scratch with NightMOTH attack modules, WAF bypass, and PDF report generation.
+                </p>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                  {["Python","Security","DDoS","UI/UX QA","NightMOTH","PDF Reports"].map(t => (
+                    <span key={t} className="lg-pill tech-tag">{t}</span>
+                  ))}
+                </div>
+                <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                  className="lgs" style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                    padding:"9px 20px", borderRadius:"99px", color:W, fontWeight:500,
+                    fontSize:"0.82rem", textDecoration:"none", transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.04)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >Launch App <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
               </div>
-              {/* IDE preview */}
-              <div className="project-ide">
-                <IdeBlock />
-              </div>
+            </div>
+            <div className="proj-visual">
+              <IdeBlock />
             </div>
           </div>
 
-          {/* Project 2: DDoS Stress Test */}
-          <div className="reveal-item project-strip">
-            <div className="project-strip-inner" style={{ alignItems: "center" }}>
-              <div className="project-meta">
-                <div className="project-number">02</div>
-                <div>
-                  <h3 className="project-name" style={{ marginBottom: "8px" }}>DDoS Stress Test Suite</h3>
-                  <p style={{ fontSize: "0.88rem", color: TEXT, lineHeight: 1.7, marginBottom: "14px", maxWidth: "46ch" }}>
-                    NightMOTH simulation platform for high-concurrency load testing. 6 attack modules including WAFGutPunch and AuthAbyss with configurable concurrency up to 2000 simultaneous requests.
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
-                    {["Python","Load Testing","Security","Concurrency","Automation"].map(t => (
-                      <span key={t} className="tech-tag">{t}</span>
-                    ))}
-                  </div>
-                  <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "8px 18px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.12)", color: TEXT, fontWeight: 600, fontSize: "0.8rem", textDecoration: "none", transition: "border-color 0.2s, color 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = ACC; e.currentTarget.style.color = BOLD; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = TEXT; }}
-                  >GitHub <ExternalLink style={{ width: "11px", height: "11px" }} /></a>
+          {/* Project 2 */}
+          <div className="reveal-item proj-card">
+            <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
+              <div className="proj-num">02</div>
+              <div style={{ flex:1 }}>
+                <h3 className="proj-name" style={{ marginBottom:"8px" }}>DDoS Stress Test Suite</h3>
+                <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
+                  NightMOTH simulation platform for high-concurrency load testing. 6 attack modules including WAFGutPunch and AuthAbyss with configurable concurrency up to 2000 simultaneous requests.
+                </p>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                  {["Python","Load Testing","Security","Concurrency","Automation"].map(t => (
+                    <span key={t} className="lg-pill tech-tag">{t}</span>
+                  ))}
                 </div>
+                <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
+                  className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+                    padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
+                    fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color=W)}
+                  onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                >GitHub <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
               </div>
-              {/* Visual: animated rings */}
-              <div style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", width: "240px", height: "180px", position: "relative" }}>
-                {[80, 120, 160].map((size, i) => (
-                  <div key={i} style={{
-                    position: "absolute", width: size, height: size, borderRadius: "50%",
-                    border: `1px solid rgba(0,229,255,${0.35 - i * 0.1})`,
-                    animation: `orbit-ring ${11 + i * 3}s linear infinite`,
-                  }}>
-                    <div style={{ position: "absolute", top: "-4px", left: "50%", transform: "translateX(-50%)", width: "7px", height: "7px", borderRadius: "50%", background: ACC, boxShadow: `0 0 12px ${ACC}` }} />
+            </div>
+            <div className="proj-visual" style={{ alignItems:"center", justifyContent:"center", display:"flex" }}>
+              <div style={{ position:"relative", width:"200px", height:"160px" }}>
+                {[80,120,160].map((size,i) => (
+                  <div key={i} style={{ position:"absolute",
+                    top:"50%", left:"50%", transform:`translate(-50%,-50%)`,
+                    width:size, height:size, borderRadius:"50%",
+                    border:`1px solid rgba(255,255,255,${0.22-i*0.06})`,
+                    animation:`orbit-ring ${11+i*3}s linear infinite` }}>
+                    <div style={{ position:"absolute", top:"-4px", left:"50%",
+                      transform:"translateX(-50%)", width:"7px", height:"7px",
+                      borderRadius:"50%", background:W60, boxShadow:`0 0 8px ${W80}` }} />
                   </div>
                 ))}
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "radial-gradient(circle, rgba(0,229,255,0.3) 0%, rgba(0,229,255,0.05) 70%)", border: `1px solid rgba(0,229,255,0.45)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Zap style={{ width: "16px", color: ACC }} />
+                <div style={{ position:"absolute", top:"50%", left:"50%",
+                  transform:"translate(-50%,-50%)", width:"36px", height:"36px",
+                  borderRadius:"50%", background:"rgba(255,255,255,0.08)",
+                  border:"1px solid rgba(255,255,255,0.2)", display:"flex",
+                  alignItems:"center", justifyContent:"center" }}>
+                  <Zap style={{ width:"16px", color:W60 }} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Project 3: Test Reports */}
-          <div className="reveal-item project-strip">
-            <div className="project-strip-inner" style={{ alignItems: "center" }}>
-              <div className="project-meta">
-                <div className="project-number">03</div>
-                <div>
-                  <h3 className="project-name" style={{ marginBottom: "8px" }}>Professional QA Test Reports</h3>
-                  <p style={{ fontSize: "0.88rem", color: TEXT, lineHeight: 1.7, marginBottom: "14px", maxWidth: "46ch" }}>
-                    Comprehensive test documentation including test plans, bug reports, test suites, and exploratory charters following industry-standard QA methodologies and severity tiers.
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
-                    {["Test Cases","Bug Reports","Jira","Exploratory","Regression"].map(t => (
-                      <span key={t} className="tech-tag">{t}</span>
-                    ))}
-                  </div>
-                  <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "8px 18px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.12)", color: TEXT, fontWeight: 600, fontSize: "0.8rem", textDecoration: "none", transition: "border-color 0.2s, color 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = ACC; e.currentTarget.style.color = BOLD; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = TEXT; }}
-                  >View Reports <ExternalLink style={{ width: "11px", height: "11px" }} /></a>
+          {/* Project 3 */}
+          <div className="reveal-item proj-card">
+            <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
+              <div className="proj-num">03</div>
+              <div style={{ flex:1 }}>
+                <h3 className="proj-name" style={{ marginBottom:"8px" }}>Professional QA Test Reports</h3>
+                <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
+                  Comprehensive test documentation including test plans, bug reports, test suites, and exploratory charters following industry-standard QA methodologies and severity tiers.
+                </p>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                  {["Test Cases","Bug Reports","Jira","Exploratory","Regression"].map(t => (
+                    <span key={t} className="lg-pill tech-tag">{t}</span>
+                  ))}
                 </div>
+                <a href={`${BASE}/behemothqa-sample-report.pdf`} target="_blank" rel="noopener noreferrer"
+                  className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+                    padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
+                    fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color=W)}
+                  onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                >View Reports <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
               </div>
-              {/* Visual: stat bars */}
-              <div style={{ flexShrink: 0, width: "220px" }}>
-                {[
-                  { label: "Test Coverage", val: 92, c: ACC },
-                  { label: "Bug Detection", val: 87, c: "#67e8f9" },
-                  { label: "Report Quality", val: 95, c: G },
-                ].map(b => (
-                  <div key={b.label} style={{ marginBottom: "14px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                      <span style={{ fontSize: "0.72rem", color: MUTED }}>{b.label}</span>
-                      <span style={{ fontSize: "0.72rem", color: b.c, fontWeight: 700 }}>{b.val}%</span>
-                    </div>
-                    <div style={{ height: "3px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${b.val}%`, background: `linear-gradient(to right, ${b.c}, ${b.c}88)`, borderRadius: "2px", boxShadow: `0 0 8px ${b.c}66`, transition: "width 1s ease" }} />
-                    </div>
+            </div>
+            <div className="proj-visual" style={{ flexShrink:0, width:"200px" }}>
+              {[
+                { label:"Test Coverage", val:92 },
+                { label:"Bug Detection", val:87 },
+                { label:"Report Quality", val:95 },
+              ].map(b => (
+                <div key={b.label} style={{ marginBottom:"14px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"5px" }}>
+                    <span style={{ fontSize:"0.72rem", color:W50 }}>{b.label}</span>
+                    <span style={{ fontSize:"0.72rem", color:W80, fontWeight:600 }}>{b.val}%</span>
                   </div>
-                ))}
-              </div>
+                  <div style={{ height:"3px", background:"rgba(255,255,255,0.1)", borderRadius:"2px", overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${b.val}%`,
+                      background:"linear-gradient(to right,rgba(255,255,255,0.7),rgba(255,255,255,0.3))",
+                      borderRadius:"2px" }} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* GlassBox interactive demo */}
-          <div className="reveal-item" style={{ marginTop: "1.5rem" }}>
+          {/* GlassBox */}
+          <div className="reveal-item" style={{ marginTop:"1.25rem" }}>
             <GlassBox />
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          SKILLS — Section 4 | Phase D: orbital grid formation
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          SKILLS
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="skills" className="reveal-section" style={{
-        position: "relative", zIndex: 1,
-        minHeight: "100svh",
-        display: "flex", alignItems: "center",
-        padding: "80px clamp(1.5rem,6vw,5rem)",
+        position:"relative", zIndex:1, minHeight:"100svh",
+        display:"flex", alignItems:"center",
+        padding:"80px clamp(1.5rem,6vw,4.5rem)",
       }}>
-        <div className="section-left-veil" />
+        <div className="sec-veil" />
+        <div style={{ position:"relative", zIndex:2, maxWidth:"1100px", margin:"0 auto", width:"100%" }}>
 
-        <div style={{ position: "relative", zIndex: 2, maxWidth: "1140px", margin: "0 auto", width: "100%" }}>
-          <div className="section-label" style={{ marginBottom: "3rem" }}>
-            <span className="section-num">03</span>
-            <span className="section-slash">/</span>
-            <span className="section-title-text">SKILLS</span>
+          <div className="sec-label" style={{ marginBottom:"3rem" }}>
+            <span className="sec-num">03</span>
+            <span className="sec-slash">/</span>
+            <span className="sec-title">SKILLS</span>
           </div>
 
-          <div className="skills-grid">
-            {/* Skill categories */}
+          <div className="two-col">
             <div>
-              <h2 className="reveal-item cinematic-heading" style={{ marginBottom: "2rem", fontSize: "clamp(1.8rem,3.5vw,2.8rem)" }}>
-                <em>Precision</em><br /><span style={{ color: ACC }}>Toolset.</span>
+              <h2 className="reveal-item sec-heading" style={{ marginBottom:"2rem", fontSize:"clamp(1.8rem,3.5vw,2.8rem)" }}>
+                <em>Precision</em><br />Toolset.
               </h2>
               {[
-                { cat: "QA",      col: ACC,       items: ["Manual Testing","Test Case Design","Bug Reporting","Regression","Exploratory Testing","Mobile Testing"] },
-                { cat: "Tools",   col: "#67e8f9", items: ["Jira","Postman","GitHub","Python","SQL","API Testing"] },
-                { cat: "Design",  col: "#f9a8d4", items: ["Figma","Photoshop","Illustrator","UI/UX Review","Accessibility"] },
-              ].map((g, i) => (
-                <div key={g.cat} className="reveal-item skill-category">
-                  <div style={{ fontSize: "0.62rem", fontWeight: 800, color: g.col, marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
-                    <span style={{ opacity: 0.5, marginRight: "6px", fontFamily: "monospace" }}>0{i + 1}</span>{g.cat}
+                { cat:"QA",     items:["Manual Testing","Test Case Design","Bug Reporting","Regression","Exploratory Testing","Mobile Testing"] },
+                { cat:"Tools",  items:["Jira","Postman","GitHub","Python","SQL","API Testing"] },
+                { cat:"Design", items:["Figma","Photoshop","Illustrator","UI/UX Review","Accessibility"] },
+              ].map((g,i) => (
+                <div key={g.cat} className="reveal-item" style={{ marginBottom:"1.5rem" }}>
+                  <div style={{ fontSize:"0.62rem", fontWeight:700, color:W50,
+                    marginBottom:"10px", textTransform:"uppercase", letterSpacing:"0.14em" }}>
+                    <span style={{ opacity:0.5, marginRight:"6px", fontFamily:"monospace" }}>0{i+1}</span>{g.cat}
                   </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:"6px" }}>
                     {g.items.map(s => (
-                      <span key={s} className="skill-pill"
-                        style={{ "--pill-col": g.col } as React.CSSProperties}
-                        onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = g.col; }}
-                        onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = TEXT; }}
-                      ><span>{s}</span></span>
+                      <span key={s} className="lg-pill"
+                        style={{ padding:"5px 13px", borderRadius:"99px", fontSize:"0.75rem",
+                          color:W60, transition:"color 0.2s" }}
+                        onMouseEnter={e => (e.currentTarget.style.color=W)}
+                        onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                      >{s}</span>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Marquee panel */}
             <div className="reveal-item">
-              <div className="glass-panel" style={{ padding: "28px", height: "100%" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
-                  <Zap style={{ width: "14px", color: ACC }} />
-                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.12em" }}>Full Skill Set</span>
+              <div className="lgs" style={{ borderRadius:"1.5rem", padding:"1.75rem", height:"100%" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"1.25rem" }}>
+                  <Zap style={{ width:"14px", color:W60 }} />
+                  <span style={{ fontSize:"0.68rem", fontWeight:700, color:W50,
+                    textTransform:"uppercase", letterSpacing:"0.12em" }}>Full Skill Set</span>
                 </div>
                 <Marquee />
-                <div style={{ marginTop: "28px", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                  <p style={{ fontSize: "0.83rem", color: TEXT, lineHeight: 1.75 }}>
+                <div style={{ marginTop:"1.75rem", paddingTop:"1.25rem",
+                  borderTop:"1px solid rgba(255,255,255,0.07)" }}>
+                  <p style={{ fontSize:"0.83rem", color:W60, lineHeight:1.75 }}>
                     Combining the precision of a QA engineer with the eye of a designer to catch bugs that matter and interfaces that don't serve their users.
                   </p>
                 </div>
@@ -888,59 +980,72 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          CONTACT — Section 5 | Phase E: energy sphere forms
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          CONTACT
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="contact" className="reveal-section" style={{
-        position: "relative", zIndex: 1,
-        minHeight: "100svh",
-        display: "flex", alignItems: "center",
-        padding: "80px clamp(1.5rem,6vw,5rem) 120px",
+        position:"relative", zIndex:1, minHeight:"100svh",
+        display:"flex", alignItems:"center",
+        padding:"80px clamp(1.5rem,6vw,4.5rem) 120px",
       }}>
-        <div className="section-left-veil" />
+        <div className="sec-veil" />
+        <div style={{ position:"relative", zIndex:2, maxWidth:"1100px", margin:"0 auto", width:"100%" }}>
 
-        <div style={{ position: "relative", zIndex: 2, maxWidth: "1140px", margin: "0 auto", width: "100%" }}>
-          <div className="section-label" style={{ marginBottom: "3rem" }}>
-            <span className="section-num">04</span>
-            <span className="section-slash">/</span>
-            <span className="section-title-text">CONTACT</span>
+          <div className="sec-label" style={{ marginBottom:"3rem" }}>
+            <span className="sec-num">04</span>
+            <span className="sec-slash">/</span>
+            <span className="sec-title">CONTACT</span>
           </div>
 
-          <div className="contact-cinematic-grid">
-            {/* Left: heading + details */}
+          <div className="two-col">
             <div>
-              <h2 className="reveal-item cinematic-heading" style={{ marginBottom: "1.5rem" }}>
-                Let's <span style={{ color: ACC }}>work</span><br /><em>together.</em>
+              <h2 className="reveal-item sec-heading" style={{ marginBottom:"1.5rem" }}>
+                Let's <span>work</span><br /><em>together.</em>
               </h2>
-              <p className="reveal-item" style={{ fontSize: "0.9rem", color: TEXT, lineHeight: 1.75, marginBottom: "2rem", maxWidth: "36ch" }}>
+              <p className="reveal-item" style={{ fontSize:"0.9rem", color:W60, lineHeight:1.75, marginBottom:"2rem", maxWidth:"36ch" }}>
                 Submit a message. I respond to every serious inquiry.
               </p>
-              <div className="reveal-item" style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "2rem" }}>
+              <div className="reveal-item" style={{ display:"flex", flexDirection:"column", gap:"14px", marginBottom:"2rem" }}>
                 {[
-                  { icon: Mail,   text: "milrad.johnathan19@gmail.com", href: "mailto:milrad.johnathan19@gmail.com" },
-                  { icon: Phone,  text: "+972 523 516 364",             href: "tel:+972523516364" },
-                  { icon: MapPin, text: "Ashdod, Israel",               href: undefined },
-                ].map(({ icon: Icon, text, href }) => (
-                  <div key={text} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div className="contact-icon-pill">
-                      <Icon style={{ width: "14px", color: ACC, position: "relative", zIndex: 1 }} />
+                  { icon:Mail,   text:"milrad.johnathan19@gmail.com", href:"mailto:milrad.johnathan19@gmail.com" },
+                  { icon:Phone,  text:"+972 523 516 364",             href:"tel:+972523516364" },
+                  { icon:MapPin, text:"Ashdod, Israel",               href:undefined },
+                ].map(({ icon:Icon, text, href }) => (
+                  <div key={text} style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+                    <div className="icon-pill icon-pill-lg">
+                      <Icon style={{ width:"14px", color:W, position:"relative", zIndex:1 }} />
                     </div>
                     {href
-                      ? <a href={href} style={{ fontSize: "0.88rem", color: TEXT, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={e => (e.currentTarget.style.color = BOLD)} onMouseLeave={e => (e.currentTarget.style.color = TEXT)}>{text}</a>
-                      : <span style={{ fontSize: "0.88rem", color: TEXT }}>{text}</span>
-                    }
+                      ? <a href={href} style={{ fontSize:"0.87rem", color:W60, textDecoration:"none", transition:"color 0.2s" }}
+                          onMouseEnter={e => (e.currentTarget.style.color=W)}
+                          onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                        >{text}</a>
+                      : <span style={{ fontSize:"0.87rem", color:W60 }}>{text}</span>}
                   </div>
                 ))}
               </div>
-              <div className="reveal-item" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <BtnGhost href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" external>LinkedIn</BtnGhost>
-                <BtnPrimary href="https://settings-qa-ai.replit.app" external>BehemothQA <ExternalLink style={{ width: "12px", height: "12px" }} /></BtnPrimary>
+              <div className="reveal-item" style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
+                <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" target="_blank"
+                  rel="noopener noreferrer" className="lg-pill"
+                  style={{ display:"inline-flex", alignItems:"center", gap:"5px", padding:"10px 20px",
+                    borderRadius:"99px", color:W60, fontSize:"0.85rem", textDecoration:"none",
+                    transition:"color 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color=W)}
+                  onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                >LinkedIn <ExternalLink style={{ width:"11px" }} /></a>
+                <a href="https://settings-qa-ai.replit.app" target="_blank"
+                  rel="noopener noreferrer" className="lgs"
+                  style={{ display:"inline-flex", alignItems:"center", gap:"5px", padding:"10px 20px",
+                    borderRadius:"99px", color:W, fontSize:"0.85rem", textDecoration:"none",
+                    transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.04)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                >BehemothQA <ExternalLink style={{ width:"11px" }} /></a>
               </div>
             </div>
 
-            {/* Right: contact form */}
             <div className="reveal-item">
-              <div className="glass-panel" style={{ padding: "32px" }}>
+              <div className="lgs" style={{ borderRadius:"1.5rem", padding:"2rem" }}>
                 <ContactForm />
               </div>
             </div>
@@ -948,179 +1053,295 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer style={{
-        position: "relative", zIndex: 1,
-        padding: "28px clamp(1.5rem,6vw,5rem)",
-        borderTop: "1px solid rgba(255,255,255,0.04)",
-        display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px",
-        background: "rgba(7,8,14,0.75)", backdropFilter: "blur(12px)",
+      {/* Footer */}
+      <footer className="lgs" style={{
+        position:"relative", zIndex:1,
+        padding:"1.5rem clamp(1.5rem,6vw,4.5rem)",
+        display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"8px",
       }}>
-        <span style={{ fontSize: "0.75rem", color: MUTED }}>© 2025 Johnatan Milrad · QA Engineer</span>
-        <span style={{ fontSize: "0.72rem", color: "rgba(248,250,252,0.1)", letterSpacing: "0.02em" }}>Built with precision.</span>
+        <span style={{ fontSize:"0.75rem", color:W50 }}>2025 Johnatan Milrad · QA Engineer</span>
+        <span style={{ fontSize:"0.7rem", color:W25, letterSpacing:"0.04em" }}>Built with precision.</span>
       </footer>
 
+      {/* ─── All inline styles ─────────────────────────────────────────────── */}
       <style>{`
-        /* ── Section layout helpers ── */
-        .section-left-veil {
-          position: absolute; inset: 0; pointer-events: none;
-          background: linear-gradient(to right, rgba(4,4,10,0.80) 0%, rgba(4,4,10,0.42) 48%, transparent 100%);
-        }
-        .section-label { display: flex; align-items: baseline; gap: 0.6rem; }
-        .section-num { font-size: clamp(0.68rem,1.5vw,0.82rem); font-weight: 700; color: ${ACC}; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
-        .section-slash { color: rgba(0,229,255,0.28); font-size: 0.78rem; }
-        .section-title-text { font-size: clamp(0.68rem,1.5vw,0.82rem); font-weight: 700; color: ${MUTED}; letter-spacing: 0.18em; text-transform: uppercase; }
-
-        /* ── Cinematic heading — Poppins with optional serif italic ── */
-        .cinematic-heading { font-size: clamp(2rem,4.5vw,3.4rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; color: ${BOLD}; margin: 0; font-family: 'Poppins', sans-serif; }
-        .cinematic-heading em { font-family: 'Source Serif 4', serif; font-style: italic; font-weight: 400; color: rgba(248,250,252,0.8); }
-
-        /* ── Glass panel — liquid-glass-strong tier ── */
-        .glass-panel {
-          background: rgba(5,5,12,0.60);
-          backdrop-filter: blur(48px) saturate(1.6);
-          -webkit-backdrop-filter: blur(48px) saturate(1.6);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.13);
-          border-radius: 22px;
+        /* ── Liquid Glass — light tier (exact Bloom spec) ── */
+        .lg {
+          background: rgba(255,255,255,0.01);
+          background-blend-mode: luminosity;
+          backdrop-filter: blur(4px);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10);
           position: relative; overflow: hidden;
         }
-        .glass-panel::before {
+        .lg::before {
           content: '';
           position: absolute; inset: 0; border-radius: inherit;
           padding: 1.4px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, transparent 40%, transparent 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+          background: linear-gradient(180deg,
+            rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+            transparent 40%, transparent 60%,
+            rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor; mask-composite: exclude;
           pointer-events: none; z-index: 0;
         }
-        .glass-panel > * { position: relative; z-index: 1; }
+        .lg > * { position: relative; z-index: 1; }
 
-        /* ── About section grid ── */
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-
-        /* ── Project strips ── */
-        .project-strip { margin-bottom: 0.875rem; }
-        .project-strip-inner {
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(14px) saturate(1.5);
-          -webkit-backdrop-filter: blur(14px) saturate(1.5);
-          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.30);
-          border-radius: 20px;
-          padding: 26px 30px;
-          display: flex; gap: 2rem; align-items: flex-start;
+        /* ── Liquid Glass Strong — heavy tier (exact Bloom spec) ── */
+        .lgs {
+          background: rgba(255,255,255,0.01);
+          background-blend-mode: luminosity;
+          backdrop-filter: blur(50px);
+          box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
           position: relative; overflow: hidden;
-          transition: box-shadow 0.28s;
         }
-        .project-strip-inner::before {
+        .lgs::before {
           content: '';
           position: absolute; inset: 0; border-radius: inherit;
+          padding: 1.4px;
+          background: linear-gradient(180deg,
+            rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.20) 20%,
+            transparent 40%, transparent 60%,
+            rgba(255,255,255,0.20) 80%, rgba(255,255,255,0.50) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none; z-index: 0;
+        }
+        .lgs > * { position: relative; z-index: 1; }
+
+        /* ── Nav glass ── */
+        nav.lgs { border-radius: 0; overflow: visible; }
+        nav.lgs::after {
+          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.06) 70%, transparent);
+          pointer-events: none;
+        }
+
+        /* ── Bloom hero panel overlay ── */
+        .bloom-panel { pointer-events: none; }
+
+        /* ── Liquid glass pill (links, tags, pills) ── */
+        .lg-pill {
+          background: rgba(255,255,255,0.01);
+          background-blend-mode: luminosity;
+          backdrop-filter: blur(4px);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10);
+          position: relative; overflow: hidden;
+          display: inline-block;
+        }
+        .lg-pill::before {
+          content: '';
+          position: absolute; inset: 0; border-radius: inherit;
+          padding: 1.4px;
+          background: linear-gradient(180deg,
+            rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+            transparent 40%, transparent 60%,
+            rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        /* ── CTA button ── */
+        .cta-btn { cursor: pointer; }
+
+        /* ── Icon pills ── */
+        .icon-pill {
+          width: 28px; height: 28px; border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(255,255,255,0.07);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10);
+          flex-shrink: 0; position: relative; overflow: hidden;
+        }
+        .icon-pill::before {
+          content: ''; position: absolute; inset: 0; border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 60%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+        .icon-pill-lg { width: 38px; height: 38px; border-radius: 12px; }
+
+        /* ── Badge ── */
+        .badge {
+          display: inline-flex; align-items: center;
+          padding: 3px 10px; border-radius: 99px;
+          font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em;
+          background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75);
+          position: relative; overflow: hidden;
+        }
+        .badge::before {
+          content: ''; position: absolute; inset: 0; border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 50%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+
+        /* ── Tech tags ── */
+        .tech-tag {
+          padding: 4px 12px !important; border-radius: 99px !important;
+          font-size: 0.69rem !important; font-weight: 500 !important;
+          color: ${W60} !important;
+        }
+
+        /* ── Section helpers ── */
+        .sec-veil {
+          position: absolute; inset: 0; pointer-events: none;
+          background: linear-gradient(to right, rgba(4,4,10,0.82) 0%, rgba(4,4,10,0.45) 50%, transparent 100%);
+        }
+        .sec-label { display: flex; align-items: baseline; gap: 0.6rem; }
+        .sec-num   { font-size: 0.78rem; font-weight: 700; color: ${W50}; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
+        .sec-slash { color: ${W25}; font-size: 0.78rem; }
+        .sec-title { font-size: 0.78rem; font-weight: 700; color: ${W25}; letter-spacing: 0.2em; text-transform: uppercase; }
+
+        /* ── Headings ── */
+        .sec-heading {
+          font-size: clamp(2rem, 4.5vw, 3.2rem);
+          font-weight: 500;
+          letter-spacing: -0.035em;
+          line-height: 1.05;
+          color: ${W};
+          margin: 0;
+          font-family: 'Poppins', sans-serif;
+        }
+        .sec-heading em {
+          font-family: 'Source Serif 4', serif;
+          font-style: italic;
+          font-weight: 300;
+          color: ${W80};
+        }
+
+        /* ── Two-col grid ── */
+        .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+
+        /* ── Project cards ── */
+        .proj-card {
+          background: rgba(255,255,255,0.01);
+          backdrop-filter: blur(4px);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.20);
+          border-radius: 1.5rem;
+          padding: 1.75rem 2rem;
+          display: flex; gap: 2rem; align-items: flex-start;
+          position: relative; overflow: hidden;
+          margin-bottom: 0.875rem;
+          transition: box-shadow 0.25s;
+        }
+        .proj-card::before {
+          content: ''; position: absolute; inset: 0; border-radius: inherit;
           padding: 1.4px;
           background: linear-gradient(180deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.10) 20%, transparent 40%, transparent 60%, rgba(255,255,255,0.10) 80%, rgba(255,255,255,0.38) 100%);
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor; mask-composite: exclude;
           pointer-events: none; z-index: 0;
         }
-        .project-strip-inner > * { position: relative; z-index: 1; }
-        .project-strip-inner:hover { box-shadow: inset 0 1px 1px rgba(255,255,255,0.14), 0 4px 32px rgba(0,229,255,0.10), 0 0 0 1px rgba(0,229,255,0.14); }
-        .project-meta { display: flex; gap: 1.5rem; flex: 1; min-width: 0; }
-        .project-number { font-size: clamp(2.5rem,5vw,4rem); font-weight: 800; color: rgba(0,229,255,0.06); font-family: 'JetBrains Mono', monospace; letter-spacing: -0.04em; line-height: 1; flex-shrink: 0; user-select: none; }
-        .project-name { font-size: 1.12rem; font-weight: 700; color: ${BOLD}; letter-spacing: -0.02em; margin: 0; font-family: 'Poppins', sans-serif; }
-        .project-ide { flex-shrink: 0; width: clamp(220px, 34%, 380px); }
-        .tech-tag { padding: 3px 11px; border-radius: 99px; font-size: 0.69rem; font-weight: 500; background: rgba(255,255,255,0.05); color: ${TEXT}; position: relative; overflow: hidden; display: inline-block; }
-        .tech-tag::before {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
-          padding: 1px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, transparent 50%, rgba(255,255,255,0.08) 100%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude;
-          pointer-events: none;
-        }
+        .proj-card > * { position: relative; z-index: 1; }
+        .proj-card:hover { box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 4px 32px rgba(255,255,255,0.06), 0 0 0 1px rgba(255,255,255,0.12); }
+        .proj-num  { font-size: clamp(2.5rem,5vw,4rem); font-weight: 700; color: rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; letter-spacing:-0.04em; line-height:1; flex-shrink:0; user-select:none; }
+        .proj-name { font-size: 1.1rem; font-weight: 500; color: ${W}; letter-spacing:-0.02em; margin:0; font-family:'Poppins',sans-serif; }
+        .proj-visual { flex-shrink: 0; width: clamp(200px,32%,360px); }
 
-        /* ── Skill pill ── */
-        .skill-pill {
-          padding: 5px 13px; border-radius: 99px; font-size: 0.75rem; font-weight: 500;
-          background: rgba(255,255,255,0.04);
+        /* ── IDE ── */
+        .ide-window { background:#080812; border-radius:10px; border:1px solid rgba(255,255,255,0.04); overflow:hidden; font-family:'JetBrains Mono',monospace; font-size:0.72rem; line-height:1.78; }
+        .ide-bar { background:#0e0e1c; padding:9px 14px; display:flex; align-items:center; gap:6px; border-bottom:1px solid rgba(255,255,255,0.04); }
+        .ide-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+        .ide-body { padding:14px 18px; overflow-x:auto; }
+        .ide-body pre { margin:0; }
+        .ide-cursor { display:inline-block; width:2px; height:1em; background:rgba(255,255,255,0.7); vertical-align:middle; animation:cursor-blink 1.1s step-end infinite; margin-left:1px; }
+
+        /* ── Syntax tokens ── */
+        .tok-cm  { color:rgba(255,255,255,0.28); font-style:italic; }
+        .tok-kw  { color:#c084fc; }
+        .tok-im  { color:#67e8f9; }
+        .tok-cls { color:#a5f3fc; }
+        .tok-fn  { color:#fde68a; }
+        .tok-str { color:#86efac; }
+        .tok-num { color:#fdba74; }
+        .tok-op  { color:rgba(255,255,255,0.4); }
+        .tok-var { color:rgba(255,255,255,0.78); }
+        .tok-pm  { color:#f9a8d4; }
+
+        /* ── Form inputs ── */
+        .noir-input {
+          background: rgba(255,255,255,0.05); border: none;
+          border-radius: 10px; color: ${W}; padding: 10px 14px; width: 100%;
+          outline: none; font-family: 'Poppins', sans-serif; font-size: 0.875rem;
           box-shadow: inset 0 1px 1px rgba(255,255,255,0.08);
-          color: ${TEXT}; transition: color 0.2s, box-shadow 0.2s; cursor: default;
-          position: relative; overflow: hidden; display: inline-block;
+          transition: box-shadow 0.2s;
+          position: relative;
         }
-        .skill-pill::before {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
-          padding: 1px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.30) 0%, transparent 50%, rgba(255,255,255,0.08) 100%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude;
-          pointer-events: none;
+        .noir-input:focus { box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.20); }
+        .noir-input::placeholder { color: ${W25}; }
+        select.noir-input option { background:#0d0d1a; color:${W}; }
+
+        /* ── Noise + vignette ── */
+        .noise {
+          position:fixed; inset:0; pointer-events:none; z-index:9999;
+          background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+          opacity:0.035;
         }
-        .skill-pill > span { position: relative; z-index: 1; }
-        .skill-pill:hover { color: ${BOLD}; box-shadow: inset 0 1px 1px rgba(255,255,255,0.14), 0 0 0 1px rgba(0,229,255,0.22); }
-
-        /* ── Skills grid ── */
-        .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-        .skill-category { margin-bottom: 1.5rem; }
-
-        /* ── Contact grid ── */
-        .contact-cinematic-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 3.5rem; align-items: start; }
-
-        /* ── Contact icon pill ── */
-        .contact-icon-pill {
-          width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.05);
-          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 2px 8px rgba(0,0,0,0.25);
-          position: relative; overflow: hidden;
-        }
-        .contact-icon-pill::before {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
-          padding: 1px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 50%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude;
-          pointer-events: none;
+        .vignette {
+          position:fixed; inset:0; pointer-events:none; z-index:1;
+          background:radial-gradient(ellipse 90% 80% at 50% 40%, transparent 30%, rgba(3,3,6,0.72) 100%);
         }
 
-        /* ── Shared animations ── */
-        @keyframes marquee-fwd { from { transform: translateX(0) } to { transform: translateX(-50%) } }
-        @keyframes marquee-rev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
-        .marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%); }
+        /* ── Live dot ── */
+        .live-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; box-shadow:0 0 6px #22c55e; animation:blink 1.5s ease-in-out infinite; flex-shrink:0; display:inline-block; }
 
-        /* ── Nav pill ── */
-        .nav-glass {
-          background: rgba(5,5,12,0.65);
-          backdrop-filter: blur(28px) saturate(1.6);
-          -webkit-backdrop-filter: blur(28px) saturate(1.6);
-          box-shadow: 0 1px 24px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.10);
-          border-bottom: none;
+        /* ── Glass Box ── */
+        .gb-root { position:relative; width:100%; height:360px; border-radius:1.25rem; overflow:hidden; cursor:crosshair; user-select:none; -webkit-user-select:none; }
+        .gb-code { position:absolute; inset:0; background:#070714; padding:22px 28px; display:flex; align-items:center; }
+        .gb-pre { font-family:'JetBrains Mono','Courier New',monospace; font-size:11.5px; line-height:1.72; color:rgba(255,255,255,0.55); white-space:pre; margin:0; pointer-events:none; }
+        .gb-line { display:block; }
+        .gb-cm { color:#f472b6; } .gb-kw { color:#60a5fa; } .gb-cl { color:#a78bfa; }
+        .gb-st { color:#fb923c; } .gb-vr { color:#34d399; } .gb-fn { color:#e879f9; }
+        .gb-nm { color:#fbbf24; } .gb-pu { color:rgba(255,255,255,0.35); }
+        .gb-glass {
+          position:absolute; inset:0;
+          background:rgba(5,5,18,0.80); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+          transition:background 0.12s,backdrop-filter 0.12s;
+          mask-image:radial-gradient(circle 120px at var(--gcx,-300px) var(--gcy,-300px), rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.15) 55px, rgba(0,0,0,1) 120px);
+          -webkit-mask-image:radial-gradient(circle 120px at var(--gcx,-300px) var(--gcy,-300px), rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.15) 55px, rgba(0,0,0,1) 120px);
         }
-        .nav-glass::after {
-          content: '';
-          position: absolute; bottom: 0; left: 0; right: 0; height: 1.4px;
-          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.20) 30%, rgba(255,255,255,0.08) 70%, transparent 100%);
-          pointer-events: none;
-        }
+        .gb-ui { padding:24px 30px; height:100%; display:flex; flex-direction:column; justify-content:center; gap:10px; }
+        .gb-ui-label { font-family:'JetBrains Mono',monospace; font-size:0.72rem; margin-bottom:-2px; }
+        .gb-ui-title { font-size:clamp(1.6rem,3vw,2.2rem); font-weight:700; letter-spacing:-0.04em; color:${W}; line-height:1; font-family:'Poppins',sans-serif; }
+        .gb-ui-desc { font-size:0.84rem; color:${W60}; line-height:1.65; max-width:44ch; }
+        .gb-ui-btn { display:inline-flex; align-items:center; padding:9px 22px; border-radius:99px; border:none; background:rgba(255,255,255,0.12); color:${W}; font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:500; cursor:pointer; transition:background 0.15s; width:fit-content; margin-top:2px; box-shadow:inset 0 1px 1px rgba(255,255,255,0.15); }
+        .gb-ui-btn:hover { background:rgba(255,255,255,0.20); }
+        .gb-cursor-ring { position:absolute; width:120px; height:120px; border-radius:50%; border:1px solid rgba(255,255,255,0.30); pointer-events:none; z-index:10; left:var(--gcx,-300px); top:var(--gcy,-300px); transform:translate(-50%,-50%); transition:left 0.04s,top 0.04s; }
+        .gb-scanning .gb-glass { background:rgba(5,5,18,0.10); backdrop-filter:blur(1px); -webkit-backdrop-filter:blur(1px); }
+        .gb-scanning::after { content:""; position:absolute; inset:0; z-index:20; pointer-events:none; background:repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px); animation:gb-scan-slide 0.08s linear infinite; }
 
-        /* ── Mobile overrides ── */
-        @media (max-width: 767px) {
-          nav { padding: 0 16px !important; min-height: 54px !important; align-content: center !important; }
-          .nav-section-links { order: 10 !important; flex-basis: 100% !important; justify-content: space-around !important; padding: 8px 0 10px !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
-          .nav-section-links a { font-size: 0.75rem !important; padding: 5px 8px !important; }
+        /* ── Keyframes ── */
+        @keyframes blink        { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.8)} }
+        @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes orbit-ring   { from{transform:rotateX(70deg) rotateZ(0deg)} to{transform:rotateX(70deg) rotateZ(360deg)} }
+        @keyframes float-badge  { 0%,100%{transform:translateY(0) translateZ(0)} 50%{transform:translateY(-5px) translateZ(6px)} }
+        @keyframes mq-fwd       { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+        @keyframes mq-rev       { from{transform:translateX(-50%)} to{transform:translateX(0)} }
+        @keyframes gb-jitter    { 0%,100%{transform:translate(0,0)} 7%{transform:translate(-3px,1px)} 14%{transform:translate(3px,-2px)} 21%{transform:translate(-2px,3px)} 49%{transform:translate(-3px,1px)} 77%{transform:translate(-1px,2px)} }
+        @keyframes gb-scan-slide{ from{background-position:0 0} to{background-position:0 4px} }
+        @keyframes text-glow    { 0%,100%{text-shadow:0 0 18px rgba(255,255,255,0.3)} 50%{text-shadow:0 0 32px rgba(255,255,255,0.6)} }
+
+        .gb-jitter { animation:gb-jitter 0.9s steps(1) forwards; }
+
+        /* ── Mobile ── */
+        @media (max-width: 1023px) {
+          #hero { flex-direction: column !important; }
           .about-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .skills-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .contact-cinematic-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .project-strip-inner { flex-direction: column !important; }
-          .project-ide { width: 100% !important; }
-          .project-meta { flex-direction: column !important; gap: 0.75rem !important; }
-          .section-left-veil { background: rgba(4,4,10,0.80) !important; }
-          .cinematic-heading { font-size: clamp(1.8rem, 8vw, 2.4rem) !important; }
-          #hero h1 { font-size: clamp(2.4rem, 9vw, 3.2rem) !important; }
-          .ide-body { overflow-x: auto !important; }
-          .ide-body pre { min-width: max-content; }
-          .contact-form-grid { grid-template-columns: 1fr !important; }
-          .gb-ui { padding: 18px 20px !important; }
+          .two-col    { grid-template-columns: 1fr !important; gap: 2rem !important; }
+          .proj-card  { flex-direction: column !important; }
+          .proj-visual { width: 100% !important; }
+          nav { padding: 0 1rem !important; }
+          .gb-root { height: 280px !important; }
           .gb-pre { font-size: 9.5px !important; }
+          .gb-cursor-ring { display: none !important; }
+          .gb-ui { padding: 16px 18px !important; }
+        }
+        @media (max-width: 640px) {
+          .sec-veil { background: rgba(4,4,10,0.82) !important; }
         }
         a { -webkit-tap-highlight-color: transparent; }
       `}</style>
