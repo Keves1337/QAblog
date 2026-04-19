@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, lazy, Suspense } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import {
   ExternalLink, Mail, Phone, MapPin, Send,
@@ -7,10 +7,10 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { WebGLGuard, hasWebGL } from "@/components/WebGLGuard";
-const MonolithScene = lazy(() => import("@/components/MonolithScene"));
 
 gsap.registerPlugin(ScrollTrigger);
+
+const BLOOM_VIDEO = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4";
 
 /* ─── Palette — Bloom white hierarchy ──────────────────────────────────── */
 const W   = "rgba(255,255,255,1)";
@@ -20,7 +20,6 @@ const W50 = "rgba(255,255,255,0.50)";
 const W25 = "rgba(255,255,255,0.25)";
 const W10 = "rgba(255,255,255,0.10)";
 const G   = "#22c55e";
-const ACC = "#00e5ff";
 const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
 /* ─── Mobile hook ───────────────────────────────────────────────────────── */
@@ -108,7 +107,7 @@ const GlassBox = () => {
       <div className="gb-glass">
         <div className="gb-ui">
           <div className="gb-ui-label"><Cm c="# // QA Component Lab" /></div>
-          <div className="gb-ui-title">Glass<span style={{ color:ACC }}>Box</span></div>
+          <div className="gb-ui-title">Glass<span style={{ color:"#a5f3fc" }}>Box</span></div>
           <div className="gb-ui-desc">Move cursor to X-ray the source code beneath the glass. Click to run a system diagnostic scan.</div>
           <button className="gb-ui-btn" onClick={onClick}>Run Diagnostic</button>
         </div>
@@ -262,10 +261,7 @@ const ContactForm = () => {
 ══════════════════════════════════════════════════════════════════════════ */
 export default function Page() {
   const isMobile = useIsMobile();
-  const scrollProgressRef = useRef<number>(0);
-  const isHoveredRef      = useRef<boolean>(false);
-  const shockRef          = useRef<HTMLDivElement>(null);
-  const [webglOk] = useState(() => typeof window !== "undefined" && hasWebGL());
+  const shockRef = useRef<HTMLDivElement>(null);
 
   /* Magnetic cursor */
   const cursorX     = useMotionValue(-100);
@@ -294,22 +290,7 @@ export default function Page() {
     return () => { window.removeEventListener("mousemove",move); window.removeEventListener("mouseover",over); };
   }, [isMobile, cursorX, cursorY, cursorScale]);
 
-  /* Scroll progress */
-  useEffect(() => {
-    if (!webglOk) return;
-    const make = (id: string, base: number) => {
-      const el = document.getElementById(id); if (!el) return null;
-      return ScrollTrigger.create({ trigger:el, start:"top 90%", end:"bottom 10%", scrub:0.6,
-        onUpdate: s => { scrollProgressRef.current = base + s.progress*0.2; } });
-    };
-    const ts = [
-      make("hero",0.00), make("about",0.20), make("projects",0.40),
-      make("skills",0.60), make("contact",0.80),
-    ].filter(Boolean);
-    return () => { ts.forEach(t => t?.kill()); };
-  }, [webglOk]);
-
-  /* GSAP explosion reveals */
+  /* GSAP reveal animations */
   useEffect(() => {
     const tweens: gsap.core.Tween[] = [];
     document.querySelectorAll<HTMLElement>(".reveal-section").forEach(section => {
@@ -347,23 +328,18 @@ export default function Page() {
     document.getElementById(id)?.scrollIntoView({ behavior:"smooth" });
   };
 
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     RENDER
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
   return (
     <>
-      {/* Fixed 3D canvas */}
-      {webglOk ? (
-        <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none" }}>
-          <Suspense fallback={null}>
-            <WebGLGuard>
-              <MonolithScene scrollProgress={scrollProgressRef} isHovered={isHoveredRef} />
-            </WebGLGuard>
-          </Suspense>
-        </div>
-      ) : (
-        <div style={{ position:"fixed", inset:0, zIndex:0, background:"linear-gradient(135deg,#07080e 0%,#0c0e1c 100%)" }} />
-      )}
+      {/* ── Full-screen video background (Bloom spec: z-0, object-cover) ── */}
+      <video
+        autoPlay loop muted playsInline
+        style={{
+          position:"fixed", inset:0, width:"100%", height:"100%",
+          objectFit:"cover", zIndex:0, pointerEvents:"none",
+        }}
+      >
+        <source src={BLOOM_VIDEO} type="video/mp4" />
+      </video>
 
       {/* Shockwave ring */}
       <div ref={shockRef} style={{
@@ -384,688 +360,632 @@ export default function Page() {
         }} />
       )}
 
-      {/* Noise + vignette */}
+      {/* Noise overlay */}
       <div className="noise" aria-hidden />
-      <div className="vignette" aria-hidden />
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          FIXED NAV (scrolled state)
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <nav className="lgs" style={{
-        position:"fixed", top:0, left:0, right:0, zIndex:100,
-        display:"flex", alignItems:"center", justifyContent:"space-between",
-        padding:"0 2rem", minHeight:"52px",
-      }}>
-        <span style={{ fontWeight:600, fontSize:"1rem", color:W, letterSpacing:"-0.03em", fontFamily:"'Poppins',sans-serif" }}>
-          Johnatan<span style={{ color:W60 }}>.</span>
-        </span>
-        <div style={{ display:"flex", gap:"4px" }}>
-          {["About","Projects","Skills","Contact"].map(l => (
-            <a key={l} href={`#${l.toLowerCase()}`} onClick={scrollTo(l.toLowerCase())}
-              style={{ fontSize:"0.8rem", color:W50, textDecoration:"none", padding:"4px 10px",
-                borderRadius:"6px", transition:"color 0.15s" }}
-              onMouseEnter={e => (e.currentTarget.style.color=W)}
-              onMouseLeave={e => (e.currentTarget.style.color=W50)}
-            >{l}</a>
-          ))}
-        </div>
-        <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-          className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
-            padding:"6px 14px", borderRadius:"99px", color:W80, fontSize:"0.78rem", fontWeight:500, textDecoration:"none" }}
-        >BehemothQA <ExternalLink style={{ width:"10px", height:"10px" }} /></a>
-      </nav>
+      {/* All content at z-10 per Bloom spec */}
+      <div style={{ position:"relative", zIndex:10 }}>
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          HERO — Two-panel split (Bloom layout)
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="hero" style={{
-        position:"relative", zIndex:1, minHeight:"100svh",
-        display:"flex", flexDirection:"row",
-      }}>
-        {/* ── LEFT PANEL 52% ── */}
-        <div style={{
-          position:"relative", width: isMobile ? "100%" : "52%",
-          display:"flex", flexDirection:"column",
-          padding: isMobile ? "1rem" : "1.5rem",
-          paddingTop: "64px",
+        {/* ── Fixed nav ── */}
+        <nav className="lgs" style={{
+          position:"fixed", top:0, left:0, right:0, zIndex:100,
+          display:"flex", alignItems:"center", justifyContent:"space-between",
+          padding:"0 2rem", minHeight:"52px",
         }}>
-          {/* liquid-glass-strong overlay */}
-          <div className="lgs bloom-panel" style={{
-            position:"absolute",
-            inset: isMobile ? "0.5rem" : "1rem 0.75rem 1rem 1rem",
-            borderRadius:"1.75rem", zIndex:0,
-          }} />
-
-          {/* Content sits above overlay */}
-          <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", height:"100%",
-            padding: isMobile ? "1.25rem" : "2rem 2.25rem" }}>
-
-            {/* Nav row inside panel */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"auto" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                <span className="live-dot" style={{ background:G, boxShadow:`0 0 6px ${G}` }} />
-                <span style={{ fontSize:"0.72rem", fontWeight:600, color:G, textTransform:"uppercase", letterSpacing:"0.16em" }}>Available for Work</span>
-              </div>
-              <button className="lg-pill" style={{ display:"flex", alignItems:"center", gap:"6px",
-                padding:"7px 14px", borderRadius:"99px", color:W80, fontSize:"0.78rem",
-                background:"transparent", border:"none", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
-                <Menu size={14} /> Menu
-              </button>
-            </div>
-
-            {/* Hero center */}
-            <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center",
-              gap: isMobile ? "1.5rem" : "2rem", padding:"2rem 0" }}>
-
-              <motion.h1 initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay:0.2, duration:0.65 }}
-                style={{ fontSize:"clamp(3rem,7.5vw,5.6rem)", fontWeight:500,
-                  letterSpacing:"-0.05em", lineHeight:0.93, color:W, margin:0,
-                  fontFamily:"'Poppins',sans-serif" }}
-              >
-                Johnatan<br />
-                <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic",
-                  fontWeight:300, color:W80 }}>Milrad.</em>
-              </motion.h1>
-
-              <motion.p initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay:0.38, duration:0.55 }}
-                style={{ fontSize:"clamp(0.9rem,1.8vw,1.05rem)", color:W60,
-                  lineHeight:1.7, maxWidth:"38ch", margin:0, fontWeight:400 }}
-              >
-                Manual QA graduate with <em style={{ fontFamily:"'Source Serif 4',serif",
-                  fontStyle:"italic", color:W80 }}>UI/UX sensibility</em> and a precise eye
-                for broken software, catching what automated tools miss.
-              </motion.p>
-
-              {/* CTA */}
-              <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay:0.5, duration:0.5 }}
-                style={{ display:"flex", gap:"12px", flexWrap:"wrap", alignItems:"center" }}
-              >
-                <a href="#about" onClick={scrollTo("about")}
-                  className="lgs cta-btn"
-                  style={{ display:"inline-flex", alignItems:"center", gap:"10px",
-                    padding:"13px 24px", borderRadius:"99px", color:W, fontWeight:500,
-                    fontSize:"0.9rem", textDecoration:"none", transition:"transform 0.2s",
-                    fontFamily:"'Poppins',sans-serif" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >
-                  View My Work
-                  <div style={{ width:"28px", height:"28px", borderRadius:"50%",
-                    background:W10, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <ArrowRight size={13} color={W} />
-                  </div>
-                </a>
-                <a href="#contact" onClick={scrollTo("contact")}
-                  className="lg-pill"
-                  style={{ display:"inline-flex", alignItems:"center", gap:"6px",
-                    padding:"13px 22px", borderRadius:"99px", color:W60,
-                    fontSize:"0.9rem", textDecoration:"none", transition:"transform 0.2s, color 0.15s",
-                    fontFamily:"'Poppins',sans-serif", border:"none" }}
-                  onMouseEnter={e => { e.currentTarget.style.transform="scale(1.04)"; e.currentTarget.style.color=W; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.color=W60; }}
-                >
-                  Get in Touch
-                </a>
-              </motion.div>
-
-              {/* Skill pills */}
-              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
-                transition={{ delay:0.62, duration:0.5 }}
-                style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}
-              >
-                {["Manual Testing","Security QA","UI/UX Review"].map(p => (
-                  <span key={p} className="lg-pill"
-                    style={{ padding:"6px 14px", borderRadius:"99px", fontSize:"0.75rem",
-                      color:W80, whiteSpace:"nowrap" }}
-                  >{p}</span>
-                ))}
-              </motion.div>
-            </div>
-
-            {/* Bottom quote */}
-            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
-              transition={{ delay:0.8, duration:0.6 }}
-              style={{ marginTop:"auto", paddingTop:"1.5rem" }}
-            >
-              <div style={{ fontSize:"0.62rem", letterSpacing:"0.22em",
-                textTransform:"uppercase", color:W50, marginBottom:"8px" }}>PORTFOLIO 2025</div>
-              <p style={{ fontSize:"0.95rem", color:W80, margin:"0 0 10px",
-                fontFamily:"'Poppins',sans-serif", fontWeight:400, lineHeight:1.55 }}>
-                "A <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic" }}>precise eye</em>{" "}
-                finds what automated tools miss."
-              </p>
-              <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-                <div style={{ flex:1, height:"1px", background:W25 }} />
-                <span style={{ fontSize:"0.62rem", letterSpacing:"0.14em", color:W50 }}>JOHNATAN MILRAD</span>
-                <div style={{ flex:1, height:"1px", background:W25 }} />
-              </div>
-            </motion.div>
+          <span style={{ fontWeight:600, fontSize:"1rem", color:W, letterSpacing:"-0.03em", fontFamily:"'Poppins',sans-serif" }}>
+            Johnatan<span style={{ color:W60 }}>.</span>
+          </span>
+          <div style={{ display:"flex", gap:"4px" }}>
+            {["About","Projects","Skills","Contact"].map(l => (
+              <a key={l} href={`#${l.toLowerCase()}`} onClick={scrollTo(l.toLowerCase())}
+                style={{ fontSize:"0.8rem", color:W50, textDecoration:"none", padding:"4px 10px",
+                  borderRadius:"6px", transition:"color 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.color=W)}
+                onMouseLeave={e => (e.currentTarget.style.color=W50)}
+              >{l}</a>
+            ))}
           </div>
-        </div>
+          <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+            className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+              padding:"6px 14px", borderRadius:"99px", color:W80, fontSize:"0.78rem", fontWeight:500, textDecoration:"none" }}
+          >BehemothQA <ExternalLink style={{ width:"10px", height:"10px" }} /></a>
+        </nav>
 
-        {/* ── RIGHT PANEL 48% — desktop only ── */}
-        {!isMobile && (
+        {/* ══════════════════════════════════════════════════════════════════
+            HERO — Bloom two-panel split
+        ══════════════════════════════════════════════════════════════════ */}
+        <section id="hero" style={{
+          minHeight:"100svh", display:"flex", flexDirection:"row",
+        }}>
+          {/* ── LEFT PANEL 52% ── */}
           <div style={{
-            width:"48%", display:"flex", flexDirection:"column",
-            padding:"5rem 1.5rem 1.5rem 0.75rem", gap:"1rem",
+            position:"relative", width: isMobile ? "100%" : "52%",
+            display:"flex", flexDirection:"column",
+            padding: isMobile ? "1rem" : "1.5rem",
+            paddingTop:"64px",
           }}>
-            {/* Top bar: social + BehemothQA */}
-            <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }}
-              transition={{ delay:0.3, duration:0.5 }}
-              style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}
-            >
-              <div className="lg-pill" style={{ display:"flex", alignItems:"center", gap:"10px",
-                padding:"8px 16px", borderRadius:"99px" }}>
-                <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2"
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ color:W80, fontSize:"0.78rem", textDecoration:"none",
-                    transition:"color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color=W)}
-                  onMouseLeave={e => (e.currentTarget.style.color=W80)}
-                >LinkedIn</a>
-                <div style={{ width:"1px", height:"12px", background:W25 }} />
-                <a href="https://github.com/Keves1337"
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ color:W80, fontSize:"0.78rem", textDecoration:"none",
-                    transition:"color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color=W)}
-                  onMouseLeave={e => (e.currentTarget.style.color=W80)}
-                >GitHub</a>
-                <ArrowRight size={13} color={W50} />
-              </div>
-              <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                className="lg-pill icon-btn"
-                style={{ display:"flex", alignItems:"center", justifyContent:"center",
-                  width:"36px", height:"36px", borderRadius:"50%", textDecoration:"none",
-                  transition:"transform 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.transform="scale(1.08)")}
-                onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-              >
-                <Sparkles size={15} color={W} />
-              </a>
-            </motion.div>
+            {/* liquid-glass-strong overlay */}
+            <div className="lgs bloom-panel" style={{
+              position:"absolute",
+              inset: isMobile ? "0.5rem" : "1rem 0.75rem 1rem 1rem",
+              borderRadius:"1.75rem", zIndex:0, pointerEvents:"none",
+            }} />
 
-            {/* About / community card */}
-            <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-              transition={{ delay:0.42, duration:0.55 }}
-              className="lg" style={{ borderRadius:"1.5rem", padding:"1.25rem", maxWidth:"240px" }}
-            >
-              <p style={{ fontSize:"0.85rem", fontWeight:500, color:W, marginBottom:"6px",
-                fontFamily:"'Poppins',sans-serif" }}>Johnatan Milrad</p>
-              <p style={{ fontSize:"0.75rem", color:W60, lineHeight:1.6, margin:0 }}>
-                Manual QA Engineer with UI/UX design expertise. Building precise test processes that catch what automated tools miss.
-              </p>
-            </motion.div>
+            <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", height:"100%",
+              padding: isMobile ? "1.25rem" : "2rem 2.25rem" }}>
 
-            {/* Feature section — bottom of right panel */}
-            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-              transition={{ delay:0.56, duration:0.6 }}
-              className="lg" style={{ marginTop:"auto", borderRadius:"2.5rem", padding:"1.25rem" }}
-            >
-              {/* Two side-by-side cards */}
-              <div style={{ display:"flex", gap:"0.75rem", marginBottom:"0.75rem" }}>
-                <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                  className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
-                    textDecoration:"none", display:"block", transition:"transform 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >
-                  <Shield size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
-                  <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
-                    fontFamily:"'Poppins',sans-serif" }}>BehemothQA</div>
-                  <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>Security platform</div>
-                </a>
-                <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
-                  className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
-                    textDecoration:"none", display:"block", transition:"transform 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >
-                  <FileText size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
-                  <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
-                    fontFamily:"'Poppins',sans-serif" }}>Test Reports</div>
-                  <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>QA documentation</div>
-                </a>
-              </div>
-
-              {/* Bottom feature card with photo */}
-              <div className="lg" style={{ borderRadius:"1.5rem", padding:"1rem",
-                display:"flex", gap:"0.875rem", alignItems:"center" }}>
-                <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
-                  style={{ width:"96px", height:"64px", objectFit:"cover", objectPosition:"50% 15%",
-                    borderRadius:"0.875rem", flexShrink:0,
-                    filter:"grayscale(15%) contrast(1.05)" }}
-                />
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
-                    fontFamily:"'Poppins',sans-serif", marginBottom:"3px" }}>Johnatan Milrad</div>
-                  <div style={{ fontSize:"0.72rem", color:W60, lineHeight:1.4 }}>QA Engineer + UI/UX Designer</div>
-                </div>
-                <a href="#contact" onClick={scrollTo("contact")}
-                  className="lg" style={{ width:"32px", height:"32px", borderRadius:"50%",
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    color:W, fontSize:"1.2rem", textDecoration:"none", flexShrink:0,
-                    transition:"transform 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.1)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >+</a>
-              </div>
-            </motion.div>
-
-            {/* Scroll indicator */}
-            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
-              transition={{ delay:1.1, duration:0.6 }}
-              style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
-                paddingTop:"0.5rem", pointerEvents:"none" }}
-            >
-              <span style={{ fontSize:"0.58rem", fontWeight:600, color:W25,
-                letterSpacing:"0.2em", textTransform:"uppercase" }}>scroll</span>
-              <motion.div animate={{ y:[0,8,0] }} transition={{ repeat:Infinity, duration:1.6, ease:"easeInOut" }}
-                style={{ width:"1px", height:"28px", background:`linear-gradient(to bottom,${W50},transparent)` }}
-              />
-            </motion.div>
-          </div>
-        )}
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          ABOUT
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="about" className="reveal-section" style={{
-        position:"relative", zIndex:1, minHeight:"100svh",
-        display:"flex", alignItems:"center",
-        padding:"80px clamp(1.5rem,6vw,4.5rem)",
-      }}>
-        <div className="sec-veil" />
-        <div style={{ position:"relative", zIndex:2, width:"100%", maxWidth:"1100px", margin:"0 auto" }}>
-
-          <div className="sec-label" style={{ marginBottom:"2.5rem" }}>
-            <span className="sec-num">01</span>
-            <span className="sec-slash">/</span>
-            <span className="sec-title">ABOUT</span>
-          </div>
-
-          <div className="about-grid">
-            <div>
-              <h2 className="reveal-item sec-heading" style={{ marginBottom:"1.5rem" }}>
-                The <em>Precise Eye</em><br />for Broken Software.
-              </h2>
-              <p className="reveal-item" style={{ fontSize:"0.92rem", color:W60, lineHeight:1.8, marginBottom:"1rem" }}>
-                I'm a <strong style={{ color:W, fontWeight:500 }}>Manual QA graduate</strong> who came to software through design, building skills across{" "}
-                <strong style={{ color:W, fontWeight:500 }}>Figma, Photoshop, and Illustrator</strong> with a strong UI/UX sensibility. That design background sharpens my eye for what's visually broken, flows that feel wrong, and UX patterns that don't serve the user.
-              </p>
-              <p className="reveal-item" style={{ fontSize:"0.92rem", color:W60, lineHeight:1.8, marginBottom:"2rem" }}>
-                On top of coursework I built <strong style={{ color:W, fontWeight:500 }}>BehemothQA</strong> independently, getting hands-on with{" "}
-                <strong style={{ color:W, fontWeight:500 }}>Jira, Postman, GitHub</strong>, and security testing in the process.
-              </p>
-              <div className="reveal-item" style={{ display:"flex", gap:"2.5rem", flexWrap:"wrap", marginBottom:"2rem" }}>
-                {[
-                  { n:"300+", l:"checks / run"  },
-                  { n:"6",    l:"attack modules" },
-                  { n:"4",    l:"severity tiers" },
-                ].map(s => (
-                  <div key={s.n}>
-                    <div style={{ fontSize:"clamp(1.8rem,3.5vw,2.4rem)", fontWeight:500, color:W,
-                      letterSpacing:"-0.04em", lineHeight:1, fontFamily:"'Poppins',sans-serif" }}>{s.n}</div>
-                    <div style={{ fontSize:"0.72rem", color:W50, marginTop:"4px" }}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="reveal-item">
-              <div className="lgs" style={{ borderRadius:"1.5rem", padding:"1.75rem", overflow:"hidden" }}>
-                {/* Photo */}
-                <div style={{ position:"relative", width:"100%", height:"200px", borderRadius:"1rem",
-                  overflow:"hidden", marginBottom:"1.25rem" }}>
-                  <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
-                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"50% 15%",
-                      filter:"grayscale(20%) contrast(1.05) brightness(0.88)" }}
-                  />
-                  <div style={{ position:"absolute", inset:0,
-                    background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)" }} />
-                  <div style={{ position:"absolute", bottom:"12px", left:"12px" }}>
-                    <span style={{ fontWeight:600, fontSize:"0.82rem", color:W }}>Johnatan Milrad</span>
-                    <span className="badge" style={{ marginLeft:"8px" }}>QA Engineer</span>
-                  </div>
-                </div>
-
-                {/* Availability */}
-                <div style={{ display:"flex", alignItems:"center", gap:"7px", marginBottom:"1rem" }}>
+              {/* Nav row */}
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"auto" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                   <span className="live-dot" style={{ background:G, boxShadow:`0 0 6px ${G}` }} />
-                  <span style={{ fontSize:"0.72rem", fontWeight:600, color:G,
-                    textTransform:"uppercase", letterSpacing:"0.14em" }}>Open to Work</span>
+                  <span style={{ fontSize:"0.72rem", fontWeight:600, color:G, textTransform:"uppercase", letterSpacing:"0.16em" }}>Available for Work</span>
                 </div>
-
-                {/* Contact info */}
-                <div style={{ display:"flex", flexDirection:"column", gap:"9px", marginBottom:"1.25rem" }}>
-                  {[
-                    { icon:MapPin, text:"Ashdod, Israel",              href:undefined },
-                    { icon:Mail,   text:"milrad.johnathan19@gmail.com", href:"mailto:milrad.johnathan19@gmail.com" },
-                    { icon:Phone,  text:"+972 523 516 364",             href:"tel:+972523516364" },
-                  ].map(({ icon:Icon, text, href }) => (
-                    <div key={text} style={{ display:"flex", alignItems:"center", gap:"9px",
-                      fontSize:"0.78rem", color:W60 }}>
-                      <div className="icon-pill">
-                        <Icon style={{ width:"12px", color:W, position:"relative", zIndex:1 }} />
-                      </div>
-                      {href ? <a href={href} style={{ color:W60, textDecoration:"none",
-                        transition:"color 0.15s" }}
-                        onMouseEnter={e => (e.currentTarget.style.color=W)}
-                        onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                      >{text}</a> : <span>{text}</span>}
-                    </div>
-                  ))}
-                </div>
-
-                <CertFlipCard />
+                <button className="lg-pill" style={{ display:"flex", alignItems:"center", gap:"6px",
+                  padding:"7px 14px", borderRadius:"99px", color:W80, fontSize:"0.78rem",
+                  background:"transparent", border:"none", cursor:"pointer", fontFamily:"'Poppins',sans-serif" }}>
+                  <Menu size={14} /> Menu
+                </button>
               </div>
+
+              {/* Hero center */}
+              <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center",
+                gap: isMobile ? "1.5rem" : "2rem", padding:"2rem 0" }}>
+
+                <motion.h1 initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay:0.2, duration:0.65 }}
+                  style={{ fontSize:"clamp(3rem,7.5vw,5.6rem)", fontWeight:500,
+                    letterSpacing:"-0.05em", lineHeight:0.93, color:W, margin:0,
+                    fontFamily:"'Poppins',sans-serif" }}
+                >
+                  Johnatan<br />
+                  <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic",
+                    fontWeight:300, color:W80 }}>Milrad.</em>
+                </motion.h1>
+
+                <motion.p initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay:0.38, duration:0.55 }}
+                  style={{ fontSize:"clamp(0.9rem,1.8vw,1.05rem)", color:W60,
+                    lineHeight:1.7, maxWidth:"38ch", margin:0, fontWeight:400 }}
+                >
+                  Manual QA graduate with <em style={{ fontFamily:"'Source Serif 4',serif",
+                    fontStyle:"italic", color:W80 }}>UI/UX sensibility</em> and a precise eye
+                  for broken software, catching what automated tools miss.
+                </motion.p>
+
+                {/* CTA */}
+                <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay:0.5, duration:0.5 }}
+                  style={{ display:"flex", gap:"12px", flexWrap:"wrap", alignItems:"center" }}
+                >
+                  <a href="#about" onClick={scrollTo("about")}
+                    className="lgs cta-btn"
+                    style={{ display:"inline-flex", alignItems:"center", gap:"10px",
+                      padding:"13px 24px", borderRadius:"99px", color:W, fontWeight:500,
+                      fontSize:"0.9rem", textDecoration:"none", transition:"transform 0.2s",
+                      fontFamily:"'Poppins',sans-serif" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >
+                    View My Work
+                    <div style={{ width:"28px", height:"28px", borderRadius:"50%",
+                      background:W10, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <ArrowRight size={13} color={W} />
+                    </div>
+                  </a>
+                  <a href="#contact" onClick={scrollTo("contact")}
+                    className="lg-pill"
+                    style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                      padding:"13px 22px", borderRadius:"99px", color:W60,
+                      fontSize:"0.9rem", textDecoration:"none", transition:"transform 0.2s, color 0.15s",
+                      fontFamily:"'Poppins',sans-serif", border:"none" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform="scale(1.04)"; e.currentTarget.style.color=W; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.color=W60; }}
+                  >
+                    Get in Touch
+                  </a>
+                </motion.div>
+
+                {/* Skill pills */}
+                <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+                  transition={{ delay:0.62, duration:0.5 }}
+                  style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}
+                >
+                  {["Manual Testing","Security QA","UI/UX Review"].map(p => (
+                    <span key={p} className="lg-pill"
+                      style={{ padding:"6px 14px", borderRadius:"99px", fontSize:"0.75rem",
+                        color:W80, whiteSpace:"nowrap" }}
+                    >{p}</span>
+                  ))}
+                </motion.div>
+              </div>
+
+              {/* Bottom quote */}
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+                transition={{ delay:0.8, duration:0.6 }}
+                style={{ marginTop:"auto", paddingTop:"1.5rem" }}
+              >
+                <div style={{ fontSize:"0.62rem", letterSpacing:"0.22em",
+                  textTransform:"uppercase", color:W50, marginBottom:"8px" }}>PORTFOLIO 2025</div>
+                <p style={{ fontSize:"0.95rem", color:W80, margin:"0 0 10px",
+                  fontFamily:"'Poppins',sans-serif", fontWeight:400, lineHeight:1.55 }}>
+                  "A <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic" }}>precise eye</em>{" "}
+                  finds what automated tools miss."
+                </p>
+                <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+                  <div style={{ flex:1, height:"1px", background:W25 }} />
+                  <span style={{ fontSize:"0.62rem", letterSpacing:"0.14em", color:W50 }}>JOHNATAN MILRAD</span>
+                  <div style={{ flex:1, height:"1px", background:W25 }} />
+                </div>
+              </motion.div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          PROJECTS
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="projects" className="reveal-section" style={{
-        position:"relative", zIndex:1, minHeight:"130svh",
-        padding:"80px clamp(1.5rem,6vw,4.5rem)",
-      }}>
-        <div className="sec-veil" />
-        <div style={{ position:"relative", zIndex:2, maxWidth:"1100px", margin:"0 auto" }}>
-
-          <div className="sec-label" style={{ marginBottom:"3rem" }}>
-            <span className="sec-num">02</span>
-            <span className="sec-slash">/</span>
-            <span className="sec-title">PROJECTS</span>
-          </div>
-
-          {/* Project 1 */}
-          <div className="reveal-item proj-card">
-            <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
-              <div className="proj-num">01</div>
-              <div style={{ flex:1 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"8px" }}>
-                  <span className="live-dot" />
-                  <h3 className="proj-name">BehemothQA</h3>
-                  <span className="badge">v2.4</span>
-                </div>
-                <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
-                  Full-scale Python QA platform with 300+ automated security checks per run. Built from scratch with NightMOTH attack modules, WAF bypass, and PDF report generation.
-                </p>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
-                  {["Python","Security","DDoS","UI/UX QA","NightMOTH","PDF Reports"].map(t => (
-                    <span key={t} className="lg-pill tech-tag">{t}</span>
-                  ))}
+          {/* ── RIGHT PANEL 48% — desktop only ── */}
+          {!isMobile && (
+            <div style={{
+              width:"48%", display:"flex", flexDirection:"column",
+              padding:"5rem 1.5rem 1.5rem 0.75rem", gap:"1rem",
+            }}>
+              {/* Social + BehemothQA */}
+              <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.3, duration:0.5 }}
+                style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}
+              >
+                <div className="lg-pill" style={{ display:"flex", alignItems:"center", gap:"10px",
+                  padding:"8px 16px", borderRadius:"99px" }}>
+                  <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2"
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ color:W80, fontSize:"0.78rem", textDecoration:"none", transition:"color 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.color=W)}
+                    onMouseLeave={e => (e.currentTarget.style.color=W80)}
+                  >LinkedIn</a>
+                  <div style={{ width:"1px", height:"12px", background:W25 }} />
+                  <a href="https://github.com/Keves1337"
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ color:W80, fontSize:"0.78rem", textDecoration:"none", transition:"color 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.color=W)}
+                    onMouseLeave={e => (e.currentTarget.style.color=W80)}
+                  >GitHub</a>
+                  <ArrowRight size={13} color={W50} />
                 </div>
                 <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                  className="lgs" style={{ display:"inline-flex", alignItems:"center", gap:"6px",
-                    padding:"9px 20px", borderRadius:"99px", color:W, fontWeight:500,
-                    fontSize:"0.82rem", textDecoration:"none", transition:"transform 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.04)")}
+                  className="lg-pill"
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center",
+                    width:"36px", height:"36px", borderRadius:"50%", textDecoration:"none",
+                    transition:"transform 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.08)")}
                   onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >Launch App <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
-              </div>
-            </div>
-            <div className="proj-visual">
-              <IdeBlock />
-            </div>
-          </div>
+                >
+                  <Sparkles size={15} color={W} />
+                </a>
+              </motion.div>
 
-          {/* Project 2 */}
-          <div className="reveal-item proj-card">
-            <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
-              <div className="proj-num">02</div>
-              <div style={{ flex:1 }}>
-                <h3 className="proj-name" style={{ marginBottom:"8px" }}>DDoS Stress Test Suite</h3>
-                <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
-                  NightMOTH simulation platform for high-concurrency load testing. 6 attack modules including WAFGutPunch and AuthAbyss with configurable concurrency up to 2000 simultaneous requests.
+              {/* About card (w-56 per Bloom spec) */}
+              <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.42, duration:0.55 }}
+                className="lg" style={{ borderRadius:"1.5rem", padding:"1.25rem", maxWidth:"224px" }}
+              >
+                <p style={{ fontSize:"0.85rem", fontWeight:500, color:W, marginBottom:"6px",
+                  fontFamily:"'Poppins',sans-serif" }}>Johnatan Milrad</p>
+                <p style={{ fontSize:"0.75rem", color:W60, lineHeight:1.6, margin:0 }}>
+                  Manual QA Engineer with UI/UX design expertise. Building precise test processes that catch what automated tools miss.
                 </p>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
-                  {["Python","Load Testing","Security","Concurrency","Automation"].map(t => (
-                    <span key={t} className="lg-pill tech-tag">{t}</span>
-                  ))}
-                </div>
-                <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
-                  className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
-                    padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
-                    fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color=W)}
-                  onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                >GitHub <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
-              </div>
-            </div>
-            <div className="proj-visual" style={{ alignItems:"center", justifyContent:"center", display:"flex" }}>
-              <div style={{ position:"relative", width:"200px", height:"160px" }}>
-                {[80,120,160].map((size,i) => (
-                  <div key={i} style={{ position:"absolute",
-                    top:"50%", left:"50%", transform:`translate(-50%,-50%)`,
-                    width:size, height:size, borderRadius:"50%",
-                    border:`1px solid rgba(255,255,255,${0.22-i*0.06})`,
-                    animation:`orbit-ring ${11+i*3}s linear infinite` }}>
-                    <div style={{ position:"absolute", top:"-4px", left:"50%",
-                      transform:"translateX(-50%)", width:"7px", height:"7px",
-                      borderRadius:"50%", background:W60, boxShadow:`0 0 8px ${W80}` }} />
-                  </div>
-                ))}
-                <div style={{ position:"absolute", top:"50%", left:"50%",
-                  transform:"translate(-50%,-50%)", width:"36px", height:"36px",
-                  borderRadius:"50%", background:"rgba(255,255,255,0.08)",
-                  border:"1px solid rgba(255,255,255,0.2)", display:"flex",
-                  alignItems:"center", justifyContent:"center" }}>
-                  <Zap style={{ width:"16px", color:W60 }} />
-                </div>
-              </div>
-            </div>
-          </div>
+              </motion.div>
 
-          {/* Project 3 */}
-          <div className="reveal-item proj-card">
-            <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
-              <div className="proj-num">03</div>
-              <div style={{ flex:1 }}>
-                <h3 className="proj-name" style={{ marginBottom:"8px" }}>Professional QA Test Reports</h3>
-                <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
-                  Comprehensive test documentation including test plans, bug reports, test suites, and exploratory charters following industry-standard QA methodologies and severity tiers.
+              {/* Bottom feature section */}
+              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.56, duration:0.6 }}
+                className="lg" style={{ marginTop:"auto", borderRadius:"2.5rem", padding:"1.25rem" }}
+              >
+                {/* Two side-by-side cards */}
+                <div style={{ display:"flex", gap:"0.75rem", marginBottom:"0.75rem" }}>
+                  <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                    className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
+                      textDecoration:"none", display:"block", transition:"transform 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >
+                    <Shield size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
+                    <div style={{ fontSize:"0.85rem", fontWeight:500, color:W, fontFamily:"'Poppins',sans-serif" }}>BehemothQA</div>
+                    <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>Security platform</div>
+                  </a>
+                  <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
+                    className="lg" style={{ flex:1, borderRadius:"1.5rem", padding:"1.1rem 1rem",
+                      textDecoration:"none", display:"block", transition:"transform 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.03)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >
+                    <FileText size={20} color={W} style={{ marginBottom:"10px", opacity:0.8 }} />
+                    <div style={{ fontSize:"0.85rem", fontWeight:500, color:W, fontFamily:"'Poppins',sans-serif" }}>Test Reports</div>
+                    <div style={{ fontSize:"0.72rem", color:W50, marginTop:"3px" }}>QA documentation</div>
+                  </a>
+                </div>
+
+                {/* Bottom card — flower/photo thumbnail per Bloom spec */}
+                <div className="lg" style={{ borderRadius:"1.5rem", padding:"1rem",
+                  display:"flex", gap:"0.875rem", alignItems:"center" }}>
+                  <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
+                    style={{ width:"96px", height:"64px", objectFit:"cover", objectPosition:"50% 15%",
+                      borderRadius:"0.875rem", flexShrink:0 }}
+                  />
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:"0.85rem", fontWeight:500, color:W,
+                      fontFamily:"'Poppins',sans-serif", marginBottom:"3px" }}>Johnatan Milrad</div>
+                    <div style={{ fontSize:"0.72rem", color:W60, lineHeight:1.4 }}>QA Engineer + UI/UX Designer</div>
+                  </div>
+                  <a href="#contact" onClick={scrollTo("contact")}
+                    className="lg" style={{ width:"32px", height:"32px", borderRadius:"50%",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      color:W, fontSize:"1.2rem", textDecoration:"none", flexShrink:0,
+                      transition:"transform 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.1)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >+</a>
+                </div>
+              </motion.div>
+
+              {/* Scroll indicator */}
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+                transition={{ delay:1.1, duration:0.6 }}
+                style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
+                  paddingTop:"0.5rem", pointerEvents:"none" }}
+              >
+                <span style={{ fontSize:"0.58rem", fontWeight:600, color:W25,
+                  letterSpacing:"0.2em", textTransform:"uppercase" }}>scroll</span>
+                <motion.div animate={{ y:[0,8,0] }} transition={{ repeat:Infinity, duration:1.6, ease:"easeInOut" }}
+                  style={{ width:"1px", height:"28px", background:`linear-gradient(to bottom,${W50},transparent)` }}
+                />
+              </motion.div>
+            </div>
+          )}
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            ABOUT
+        ══════════════════════════════════════════════════════════════════ */}
+        <section id="about" className="reveal-section" style={{
+          minHeight:"100svh", display:"flex", alignItems:"center",
+          padding:"80px clamp(1.5rem,6vw,4.5rem)",
+          background:"rgba(0,0,0,0.55)", backdropFilter:"blur(0px)",
+        }}>
+          <div style={{ width:"100%", maxWidth:"1100px", margin:"0 auto" }}>
+            <div className="sec-label" style={{ marginBottom:"2.5rem" }}>
+              <span className="sec-num">01</span>
+              <span className="sec-slash">/</span>
+              <span className="sec-title">ABOUT</span>
+            </div>
+            <div className="about-grid">
+              <div>
+                <h2 className="reveal-item sec-heading" style={{ marginBottom:"1.5rem" }}>
+                  The <em>Precise Eye</em><br />for Broken Software.
+                </h2>
+                <p className="reveal-item" style={{ fontSize:"0.92rem", color:W60, lineHeight:1.8, marginBottom:"1rem" }}>
+                  I'm a <strong style={{ color:W, fontWeight:500 }}>Manual QA graduate</strong> who came to software through design, building skills across{" "}
+                  <strong style={{ color:W, fontWeight:500 }}>Figma, Photoshop, and Illustrator</strong> with a strong UI/UX sensibility. That design background sharpens my eye for what's visually broken.
                 </p>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
-                  {["Test Cases","Bug Reports","Jira","Exploratory","Regression"].map(t => (
-                    <span key={t} className="lg-pill tech-tag">{t}</span>
-                  ))}
-                </div>
-                <a href={`${BASE}/behemothqa-sample-report.pdf`} target="_blank" rel="noopener noreferrer"
-                  className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
-                    padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
-                    fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color=W)}
-                  onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                >View Reports <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
-              </div>
-            </div>
-            <div className="proj-visual" style={{ flexShrink:0, width:"200px" }}>
-              {[
-                { label:"Test Coverage", val:92 },
-                { label:"Bug Detection", val:87 },
-                { label:"Report Quality", val:95 },
-              ].map(b => (
-                <div key={b.label} style={{ marginBottom:"14px" }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"5px" }}>
-                    <span style={{ fontSize:"0.72rem", color:W50 }}>{b.label}</span>
-                    <span style={{ fontSize:"0.72rem", color:W80, fontWeight:600 }}>{b.val}%</span>
-                  </div>
-                  <div style={{ height:"3px", background:"rgba(255,255,255,0.1)", borderRadius:"2px", overflow:"hidden" }}>
-                    <div style={{ height:"100%", width:`${b.val}%`,
-                      background:"linear-gradient(to right,rgba(255,255,255,0.7),rgba(255,255,255,0.3))",
-                      borderRadius:"2px" }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* GlassBox */}
-          <div className="reveal-item" style={{ marginTop:"1.25rem" }}>
-            <GlassBox />
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          SKILLS
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="skills" className="reveal-section" style={{
-        position:"relative", zIndex:1, minHeight:"100svh",
-        display:"flex", alignItems:"center",
-        padding:"80px clamp(1.5rem,6vw,4.5rem)",
-      }}>
-        <div className="sec-veil" />
-        <div style={{ position:"relative", zIndex:2, maxWidth:"1100px", margin:"0 auto", width:"100%" }}>
-
-          <div className="sec-label" style={{ marginBottom:"3rem" }}>
-            <span className="sec-num">03</span>
-            <span className="sec-slash">/</span>
-            <span className="sec-title">SKILLS</span>
-          </div>
-
-          <div className="two-col">
-            <div>
-              <h2 className="reveal-item sec-heading" style={{ marginBottom:"2rem", fontSize:"clamp(1.8rem,3.5vw,2.8rem)" }}>
-                <em>Precision</em><br />Toolset.
-              </h2>
-              {[
-                { cat:"QA",     items:["Manual Testing","Test Case Design","Bug Reporting","Regression","Exploratory Testing","Mobile Testing"] },
-                { cat:"Tools",  items:["Jira","Postman","GitHub","Python","SQL","API Testing"] },
-                { cat:"Design", items:["Figma","Photoshop","Illustrator","UI/UX Review","Accessibility"] },
-              ].map((g,i) => (
-                <div key={g.cat} className="reveal-item" style={{ marginBottom:"1.5rem" }}>
-                  <div style={{ fontSize:"0.62rem", fontWeight:700, color:W50,
-                    marginBottom:"10px", textTransform:"uppercase", letterSpacing:"0.14em" }}>
-                    <span style={{ opacity:0.5, marginRight:"6px", fontFamily:"monospace" }}>0{i+1}</span>{g.cat}
-                  </div>
-                  <div style={{ display:"flex", flexWrap:"wrap", gap:"6px" }}>
-                    {g.items.map(s => (
-                      <span key={s} className="lg-pill"
-                        style={{ padding:"5px 13px", borderRadius:"99px", fontSize:"0.75rem",
-                          color:W60, transition:"color 0.2s" }}
-                        onMouseEnter={e => (e.currentTarget.style.color=W)}
-                        onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                      >{s}</span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="reveal-item">
-              <div className="lgs" style={{ borderRadius:"1.5rem", padding:"1.75rem", height:"100%" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"1.25rem" }}>
-                  <Zap style={{ width:"14px", color:W60 }} />
-                  <span style={{ fontSize:"0.68rem", fontWeight:700, color:W50,
-                    textTransform:"uppercase", letterSpacing:"0.12em" }}>Full Skill Set</span>
-                </div>
-                <Marquee />
-                <div style={{ marginTop:"1.75rem", paddingTop:"1.25rem",
-                  borderTop:"1px solid rgba(255,255,255,0.07)" }}>
-                  <p style={{ fontSize:"0.83rem", color:W60, lineHeight:1.75 }}>
-                    Combining the precision of a QA engineer with the eye of a designer to catch bugs that matter and interfaces that don't serve their users.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          CONTACT
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="contact" className="reveal-section" style={{
-        position:"relative", zIndex:1, minHeight:"100svh",
-        display:"flex", alignItems:"center",
-        padding:"80px clamp(1.5rem,6vw,4.5rem) 120px",
-      }}>
-        <div className="sec-veil" />
-        <div style={{ position:"relative", zIndex:2, maxWidth:"1100px", margin:"0 auto", width:"100%" }}>
-
-          <div className="sec-label" style={{ marginBottom:"3rem" }}>
-            <span className="sec-num">04</span>
-            <span className="sec-slash">/</span>
-            <span className="sec-title">CONTACT</span>
-          </div>
-
-          <div className="two-col">
-            <div>
-              <h2 className="reveal-item sec-heading" style={{ marginBottom:"1.5rem" }}>
-                Let's <span>work</span><br /><em>together.</em>
-              </h2>
-              <p className="reveal-item" style={{ fontSize:"0.9rem", color:W60, lineHeight:1.75, marginBottom:"2rem", maxWidth:"36ch" }}>
-                Submit a message. I respond to every serious inquiry.
-              </p>
-              <div className="reveal-item" style={{ display:"flex", flexDirection:"column", gap:"14px", marginBottom:"2rem" }}>
-                {[
-                  { icon:Mail,   text:"milrad.johnathan19@gmail.com", href:"mailto:milrad.johnathan19@gmail.com" },
-                  { icon:Phone,  text:"+972 523 516 364",             href:"tel:+972523516364" },
-                  { icon:MapPin, text:"Ashdod, Israel",               href:undefined },
-                ].map(({ icon:Icon, text, href }) => (
-                  <div key={text} style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-                    <div className="icon-pill icon-pill-lg">
-                      <Icon style={{ width:"14px", color:W, position:"relative", zIndex:1 }} />
+                <p className="reveal-item" style={{ fontSize:"0.92rem", color:W60, lineHeight:1.8, marginBottom:"2rem" }}>
+                  On top of coursework I built <strong style={{ color:W, fontWeight:500 }}>BehemothQA</strong> independently, getting hands-on with{" "}
+                  <strong style={{ color:W, fontWeight:500 }}>Jira, Postman, GitHub</strong>, and security testing.
+                </p>
+                <div className="reveal-item" style={{ display:"flex", gap:"2.5rem", flexWrap:"wrap", marginBottom:"2rem" }}>
+                  {[{ n:"300+", l:"checks / run" },{ n:"6", l:"attack modules" },{ n:"4", l:"severity tiers" }].map(s => (
+                    <div key={s.n}>
+                      <div style={{ fontSize:"clamp(1.8rem,3.5vw,2.4rem)", fontWeight:500, color:W,
+                        letterSpacing:"-0.04em", lineHeight:1, fontFamily:"'Poppins',sans-serif" }}>{s.n}</div>
+                      <div style={{ fontSize:"0.72rem", color:W50, marginTop:"4px" }}>{s.l}</div>
                     </div>
-                    {href
-                      ? <a href={href} style={{ fontSize:"0.87rem", color:W60, textDecoration:"none", transition:"color 0.2s" }}
+                  ))}
+                </div>
+              </div>
+              <div className="reveal-item">
+                <div className="lgs" style={{ borderRadius:"1.5rem", padding:"1.75rem" }}>
+                  <div style={{ position:"relative", width:"100%", height:"200px", borderRadius:"1rem", overflow:"hidden", marginBottom:"1.25rem" }}>
+                    <img src={`${BASE}/hero.jpeg`} alt="Johnatan Milrad"
+                      style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"50% 15%" }}
+                    />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)" }} />
+                    <div style={{ position:"absolute", bottom:"12px", left:"12px" }}>
+                      <span style={{ fontWeight:600, fontSize:"0.82rem", color:W }}>Johnatan Milrad</span>
+                      <span className="badge" style={{ marginLeft:"8px" }}>QA Engineer</span>
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"center", gap:"7px", marginBottom:"1rem" }}>
+                    <span className="live-dot" style={{ background:G, boxShadow:`0 0 6px ${G}` }} />
+                    <span style={{ fontSize:"0.72rem", fontWeight:600, color:G, textTransform:"uppercase", letterSpacing:"0.14em" }}>Open to Work</span>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"9px", marginBottom:"1.25rem" }}>
+                    {[
+                      { icon:MapPin, text:"Ashdod, Israel",              href:undefined },
+                      { icon:Mail,   text:"milrad.johnathan19@gmail.com", href:"mailto:milrad.johnathan19@gmail.com" },
+                      { icon:Phone,  text:"+972 523 516 364",             href:"tel:+972523516364" },
+                    ].map(({ icon:Icon, text, href }) => (
+                      <div key={text} style={{ display:"flex", alignItems:"center", gap:"9px", fontSize:"0.78rem", color:W60 }}>
+                        <div className="icon-pill"><Icon style={{ width:"12px", color:W, position:"relative", zIndex:1 }} /></div>
+                        {href ? <a href={href} style={{ color:W60, textDecoration:"none", transition:"color 0.15s" }}
                           onMouseEnter={e => (e.currentTarget.style.color=W)}
                           onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                        >{text}</a>
-                      : <span style={{ fontSize:"0.87rem", color:W60 }}>{text}</span>}
+                        >{text}</a> : <span>{text}</span>}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="reveal-item" style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
-                <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" target="_blank"
-                  rel="noopener noreferrer" className="lg-pill"
-                  style={{ display:"inline-flex", alignItems:"center", gap:"5px", padding:"10px 20px",
-                    borderRadius:"99px", color:W60, fontSize:"0.85rem", textDecoration:"none",
-                    transition:"color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color=W)}
-                  onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                >LinkedIn <ExternalLink style={{ width:"11px" }} /></a>
-                <a href="https://settings-qa-ai.replit.app" target="_blank"
-                  rel="noopener noreferrer" className="lgs"
-                  style={{ display:"inline-flex", alignItems:"center", gap:"5px", padding:"10px 20px",
-                    borderRadius:"99px", color:W, fontSize:"0.85rem", textDecoration:"none",
-                    transition:"transform 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.04)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >BehemothQA <ExternalLink style={{ width:"11px" }} /></a>
-              </div>
-            </div>
-
-            <div className="reveal-item">
-              <div className="lgs" style={{ borderRadius:"1.5rem", padding:"2rem" }}>
-                <ContactForm />
+                  <CertFlipCard />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer */}
-      <footer className="lgs" style={{
-        position:"relative", zIndex:1,
-        padding:"1.5rem clamp(1.5rem,6vw,4.5rem)",
-        display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"8px",
-      }}>
-        <span style={{ fontSize:"0.75rem", color:W50 }}>2025 Johnatan Milrad · QA Engineer</span>
-        <span style={{ fontSize:"0.7rem", color:W25, letterSpacing:"0.04em" }}>Built with precision.</span>
-      </footer>
+        {/* ══════════════════════════════════════════════════════════════════
+            PROJECTS
+        ══════════════════════════════════════════════════════════════════ */}
+        <section id="projects" className="reveal-section" style={{
+          minHeight:"130svh", padding:"80px clamp(1.5rem,6vw,4.5rem)",
+          background:"rgba(0,0,0,0.60)",
+        }}>
+          <div style={{ maxWidth:"1100px", margin:"0 auto" }}>
+            <div className="sec-label" style={{ marginBottom:"3rem" }}>
+              <span className="sec-num">02</span><span className="sec-slash">/</span>
+              <span className="sec-title">PROJECTS</span>
+            </div>
 
-      {/* ─── All inline styles ─────────────────────────────────────────────── */}
+            {/* P1 */}
+            <div className="reveal-item proj-card">
+              <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
+                <div className="proj-num">01</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"8px" }}>
+                    <span className="live-dot" /><h3 className="proj-name">BehemothQA</h3>
+                    <span className="badge">v2.4</span>
+                  </div>
+                  <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
+                    Full-scale Python QA platform with 300+ automated security checks per run. Built from scratch with NightMOTH attack modules, WAF bypass, and PDF report generation.
+                  </p>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                    {["Python","Security","DDoS","UI/UX QA","NightMOTH","PDF Reports"].map(t => (
+                      <span key={t} className="lg-pill tech-tag">{t}</span>
+                    ))}
+                  </div>
+                  <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                    className="lgs" style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                      padding:"9px 20px", borderRadius:"99px", color:W, fontWeight:500,
+                      fontSize:"0.82rem", textDecoration:"none", transition:"transform 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.04)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >Launch App <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
+                </div>
+              </div>
+              <div className="proj-visual"><IdeBlock /></div>
+            </div>
+
+            {/* P2 */}
+            <div className="reveal-item proj-card">
+              <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
+                <div className="proj-num">02</div>
+                <div style={{ flex:1 }}>
+                  <h3 className="proj-name" style={{ marginBottom:"8px" }}>DDoS Stress Test Suite</h3>
+                  <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
+                    NightMOTH simulation platform for high-concurrency load testing. 6 attack modules including WAFGutPunch and AuthAbyss with configurable concurrency up to 2000 simultaneous requests.
+                  </p>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                    {["Python","Load Testing","Security","Concurrency","Automation"].map(t => (
+                      <span key={t} className="lg-pill tech-tag">{t}</span>
+                    ))}
+                  </div>
+                  <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
+                    className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+                      padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
+                      fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.color=W)}
+                    onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                  >GitHub <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
+                </div>
+              </div>
+              <div className="proj-visual" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ position:"relative", width:"200px", height:"160px" }}>
+                  {[80,120,160].map((size,i) => (
+                    <div key={i} style={{ position:"absolute", top:"50%", left:"50%",
+                      transform:"translate(-50%,-50%)", width:size, height:size, borderRadius:"50%",
+                      border:`1px solid rgba(255,255,255,${0.22-i*0.06})`,
+                      animation:`orbit-ring ${11+i*3}s linear infinite` }}>
+                      <div style={{ position:"absolute", top:"-4px", left:"50%",
+                        transform:"translateX(-50%)", width:"7px", height:"7px",
+                        borderRadius:"50%", background:W60, boxShadow:`0 0 8px ${W80}` }} />
+                    </div>
+                  ))}
+                  <div style={{ position:"absolute", top:"50%", left:"50%",
+                    transform:"translate(-50%,-50%)", width:"36px", height:"36px", borderRadius:"50%",
+                    background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.2)",
+                    display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <Zap style={{ width:"16px", color:W60 }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* P3 */}
+            <div className="reveal-item proj-card">
+              <div style={{ display:"flex", gap:"1.5rem", flex:1, minWidth:0 }}>
+                <div className="proj-num">03</div>
+                <div style={{ flex:1 }}>
+                  <h3 className="proj-name" style={{ marginBottom:"8px" }}>Professional QA Test Reports</h3>
+                  <p style={{ fontSize:"0.87rem", color:W60, lineHeight:1.7, marginBottom:"14px", maxWidth:"46ch" }}>
+                    Comprehensive test documentation including test plans, bug reports, test suites, and exploratory charters following industry-standard QA methodologies.
+                  </p>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"14px" }}>
+                    {["Test Cases","Bug Reports","Jira","Exploratory","Regression"].map(t => (
+                      <span key={t} className="lg-pill tech-tag">{t}</span>
+                    ))}
+                  </div>
+                  <a href={`${BASE}/behemothqa-sample-report.pdf`} target="_blank" rel="noopener noreferrer"
+                    className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+                      padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
+                      fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.color=W)}
+                    onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                  >View Reports <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
+                </div>
+              </div>
+              <div className="proj-visual" style={{ flexShrink:0, width:"200px" }}>
+                {[{ label:"Test Coverage", val:92 },{ label:"Bug Detection", val:87 },{ label:"Report Quality", val:95 }].map(b => (
+                  <div key={b.label} style={{ marginBottom:"14px" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"5px" }}>
+                      <span style={{ fontSize:"0.72rem", color:W50 }}>{b.label}</span>
+                      <span style={{ fontSize:"0.72rem", color:W80, fontWeight:600 }}>{b.val}%</span>
+                    </div>
+                    <div style={{ height:"3px", background:"rgba(255,255,255,0.1)", borderRadius:"2px", overflow:"hidden" }}>
+                      <div style={{ height:"100%", width:`${b.val}%`,
+                        background:"linear-gradient(to right,rgba(255,255,255,0.7),rgba(255,255,255,0.3))",
+                        borderRadius:"2px" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="reveal-item" style={{ marginTop:"1.25rem" }}>
+              <GlassBox />
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            SKILLS
+        ══════════════════════════════════════════════════════════════════ */}
+        <section id="skills" className="reveal-section" style={{
+          minHeight:"100svh", display:"flex", alignItems:"center",
+          padding:"80px clamp(1.5rem,6vw,4.5rem)",
+          background:"rgba(0,0,0,0.55)",
+        }}>
+          <div style={{ maxWidth:"1100px", margin:"0 auto", width:"100%" }}>
+            <div className="sec-label" style={{ marginBottom:"3rem" }}>
+              <span className="sec-num">03</span><span className="sec-slash">/</span>
+              <span className="sec-title">SKILLS</span>
+            </div>
+            <div className="two-col">
+              <div>
+                <h2 className="reveal-item sec-heading" style={{ marginBottom:"2rem", fontSize:"clamp(1.8rem,3.5vw,2.8rem)" }}>
+                  <em>Precision</em><br />Toolset.
+                </h2>
+                {[
+                  { cat:"QA",     items:["Manual Testing","Test Case Design","Bug Reporting","Regression","Exploratory Testing","Mobile Testing"] },
+                  { cat:"Tools",  items:["Jira","Postman","GitHub","Python","SQL","API Testing"] },
+                  { cat:"Design", items:["Figma","Photoshop","Illustrator","UI/UX Review","Accessibility"] },
+                ].map((g,i) => (
+                  <div key={g.cat} className="reveal-item" style={{ marginBottom:"1.5rem" }}>
+                    <div style={{ fontSize:"0.62rem", fontWeight:700, color:W50, marginBottom:"10px",
+                      textTransform:"uppercase", letterSpacing:"0.14em" }}>
+                      <span style={{ opacity:0.5, marginRight:"6px", fontFamily:"monospace" }}>0{i+1}</span>{g.cat}
+                    </div>
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:"6px" }}>
+                      {g.items.map(s => (
+                        <span key={s} className="lg-pill"
+                          style={{ padding:"5px 13px", borderRadius:"99px", fontSize:"0.75rem",
+                            color:W60, transition:"color 0.2s" }}
+                          onMouseEnter={e => (e.currentTarget.style.color=W)}
+                          onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                        >{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="reveal-item">
+                <div className="lgs" style={{ borderRadius:"1.5rem", padding:"1.75rem", height:"100%" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"1.25rem" }}>
+                    <Zap style={{ width:"14px", color:W60 }} />
+                    <span style={{ fontSize:"0.68rem", fontWeight:700, color:W50, textTransform:"uppercase", letterSpacing:"0.12em" }}>Full Skill Set</span>
+                  </div>
+                  <Marquee />
+                  <div style={{ marginTop:"1.75rem", paddingTop:"1.25rem", borderTop:"1px solid rgba(255,255,255,0.07)" }}>
+                    <p style={{ fontSize:"0.83rem", color:W60, lineHeight:1.75 }}>
+                      Combining the precision of a QA engineer with the eye of a designer to catch bugs that matter and interfaces that don't serve their users.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            CONTACT
+        ══════════════════════════════════════════════════════════════════ */}
+        <section id="contact" className="reveal-section" style={{
+          minHeight:"100svh", display:"flex", alignItems:"center",
+          padding:"80px clamp(1.5rem,6vw,4.5rem) 120px",
+          background:"rgba(0,0,0,0.60)",
+        }}>
+          <div style={{ maxWidth:"1100px", margin:"0 auto", width:"100%" }}>
+            <div className="sec-label" style={{ marginBottom:"3rem" }}>
+              <span className="sec-num">04</span><span className="sec-slash">/</span>
+              <span className="sec-title">CONTACT</span>
+            </div>
+            <div className="two-col">
+              <div>
+                <h2 className="reveal-item sec-heading" style={{ marginBottom:"1.5rem" }}>
+                  Let's <span>work</span><br /><em>together.</em>
+                </h2>
+                <p className="reveal-item" style={{ fontSize:"0.9rem", color:W60, lineHeight:1.75, marginBottom:"2rem", maxWidth:"36ch" }}>
+                  Submit a message. I respond to every serious inquiry.
+                </p>
+                <div className="reveal-item" style={{ display:"flex", flexDirection:"column", gap:"14px", marginBottom:"2rem" }}>
+                  {[
+                    { icon:Mail,   text:"milrad.johnathan19@gmail.com", href:"mailto:milrad.johnathan19@gmail.com" },
+                    { icon:Phone,  text:"+972 523 516 364",             href:"tel:+972523516364" },
+                    { icon:MapPin, text:"Ashdod, Israel",               href:undefined },
+                  ].map(({ icon:Icon, text, href }) => (
+                    <div key={text} style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+                      <div className="icon-pill icon-pill-lg">
+                        <Icon style={{ width:"14px", color:W, position:"relative", zIndex:1 }} />
+                      </div>
+                      {href
+                        ? <a href={href} style={{ fontSize:"0.87rem", color:W60, textDecoration:"none", transition:"color 0.2s" }}
+                            onMouseEnter={e => (e.currentTarget.style.color=W)}
+                            onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                          >{text}</a>
+                        : <span style={{ fontSize:"0.87rem", color:W60 }}>{text}</span>}
+                    </div>
+                  ))}
+                </div>
+                <div className="reveal-item" style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
+                  <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" target="_blank" rel="noopener noreferrer"
+                    className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+                      padding:"10px 20px", borderRadius:"99px", color:W60, fontSize:"0.85rem",
+                      textDecoration:"none", transition:"color 0.15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.color=W)}
+                    onMouseLeave={e => (e.currentTarget.style.color=W60)}
+                  >LinkedIn <ExternalLink style={{ width:"11px" }} /></a>
+                  <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
+                    className="lgs" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
+                      padding:"10px 20px", borderRadius:"99px", color:W, fontSize:"0.85rem",
+                      textDecoration:"none", transition:"transform 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.04)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >BehemothQA <ExternalLink style={{ width:"11px" }} /></a>
+                </div>
+              </div>
+              <div className="reveal-item">
+                <div className="lgs" style={{ borderRadius:"1.5rem", padding:"2rem" }}>
+                  <ContactForm />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="lgs" style={{
+          padding:"1.5rem clamp(1.5rem,6vw,4.5rem)",
+          display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"8px",
+        }}>
+          <span style={{ fontSize:"0.75rem", color:W50 }}>2025 Johnatan Milrad · QA Engineer</span>
+          <span style={{ fontSize:"0.7rem", color:W25, letterSpacing:"0.04em" }}>Built with precision.</span>
+        </footer>
+      </div>
+
+      {/* ─── Styles ─────────────────────────────────────────────────────── */}
       <style>{`
-        /* ── Liquid Glass — light tier (exact Bloom spec) ── */
+        /* ── Liquid Glass light (exact Bloom spec) ── */
         .lg {
           background: rgba(255,255,255,0.01);
           background-blend-mode: luminosity;
@@ -1074,8 +994,7 @@ export default function Page() {
           position: relative; overflow: hidden;
         }
         .lg::before {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
+          content: ''; position: absolute; inset: 0; border-radius: inherit;
           padding: 1.4px;
           background: linear-gradient(180deg,
             rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
@@ -1087,7 +1006,7 @@ export default function Page() {
         }
         .lg > * { position: relative; z-index: 1; }
 
-        /* ── Liquid Glass Strong — heavy tier (exact Bloom spec) ── */
+        /* ── Liquid Glass Strong (exact Bloom spec) ── */
         .lgs {
           background: rgba(255,255,255,0.01);
           background-blend-mode: luminosity;
@@ -1096,8 +1015,7 @@ export default function Page() {
           position: relative; overflow: hidden;
         }
         .lgs::before {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
+          content: ''; position: absolute; inset: 0; border-radius: inherit;
           padding: 1.4px;
           background: linear-gradient(180deg,
             rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.20) 20%,
@@ -1109,7 +1027,7 @@ export default function Page() {
         }
         .lgs > * { position: relative; z-index: 1; }
 
-        /* ── Nav glass ── */
+        /* Nav hairline */
         nav.lgs { border-radius: 0; overflow: visible; }
         nav.lgs::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
@@ -1117,10 +1035,10 @@ export default function Page() {
           pointer-events: none;
         }
 
-        /* ── Bloom hero panel overlay ── */
+        /* Bloom panel overlay — pointer-events:none so clicks pass through */
         .bloom-panel { pointer-events: none; }
 
-        /* ── Liquid glass pill (links, tags, pills) ── */
+        /* ── Pills ── */
         .lg-pill {
           background: rgba(255,255,255,0.01);
           background-blend-mode: luminosity;
@@ -1130,119 +1048,98 @@ export default function Page() {
           display: inline-block;
         }
         .lg-pill::before {
-          content: '';
-          position: absolute; inset: 0; border-radius: inherit;
-          padding: 1.4px;
+          content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
           background: linear-gradient(180deg,
             rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
             transparent 40%, transparent 60%,
             rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude;
-          pointer-events: none;
+          -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
         }
 
-        /* ── CTA button ── */
         .cta-btn { cursor: pointer; }
 
-        /* ── Icon pills ── */
+        /* Icon pills */
         .icon-pill {
-          width: 28px; height: 28px; border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.07);
-          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10);
-          flex-shrink: 0; position: relative; overflow: hidden;
+          width:28px; height:28px; border-radius:8px;
+          display:flex; align-items:center; justify-content:center;
+          background:rgba(255,255,255,0.07);
+          box-shadow:inset 0 1px 1px rgba(255,255,255,0.10);
+          flex-shrink:0; position:relative; overflow:hidden;
         }
         .icon-pill::before {
-          content: ''; position: absolute; inset: 0; border-radius: inherit;
-          padding: 1px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 60%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+          content:''; position:absolute; inset:0; border-radius:inherit; padding:1px;
+          background:linear-gradient(135deg,rgba(255,255,255,0.35) 0%,transparent 60%);
+          -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+          -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
         }
-        .icon-pill-lg { width: 38px; height: 38px; border-radius: 12px; }
+        .icon-pill-lg { width:38px; height:38px; border-radius:12px; }
 
-        /* ── Badge ── */
+        /* Badge */
         .badge {
-          display: inline-flex; align-items: center;
-          padding: 3px 10px; border-radius: 99px;
-          font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em;
-          background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75);
-          position: relative; overflow: hidden;
+          display:inline-flex; align-items:center;
+          padding:3px 10px; border-radius:99px;
+          font-size:0.66rem; font-weight:600; letter-spacing:0.05em;
+          background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.75);
+          position:relative; overflow:hidden;
         }
         .badge::before {
-          content: ''; position: absolute; inset: 0; border-radius: inherit;
-          padding: 1px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 50%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+          content:''; position:absolute; inset:0; border-radius:inherit; padding:1px;
+          background:linear-gradient(180deg,rgba(255,255,255,0.35) 0%,transparent 50%);
+          -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+          -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
         }
 
-        /* ── Tech tags ── */
+        /* Tech tags */
         .tech-tag {
-          padding: 4px 12px !important; border-radius: 99px !important;
-          font-size: 0.69rem !important; font-weight: 500 !important;
-          color: ${W60} !important;
+          padding:4px 12px !important; border-radius:99px !important;
+          font-size:0.69rem !important; font-weight:500 !important;
+          color:${W60} !important;
         }
 
-        /* ── Section helpers ── */
-        .sec-veil {
-          position: absolute; inset: 0; pointer-events: none;
-          background: linear-gradient(to right, rgba(4,4,10,0.82) 0%, rgba(4,4,10,0.45) 50%, transparent 100%);
-        }
-        .sec-label { display: flex; align-items: baseline; gap: 0.6rem; }
-        .sec-num   { font-size: 0.78rem; font-weight: 700; color: ${W50}; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
-        .sec-slash { color: ${W25}; font-size: 0.78rem; }
-        .sec-title { font-size: 0.78rem; font-weight: 700; color: ${W25}; letter-spacing: 0.2em; text-transform: uppercase; }
+        /* Section labels */
+        .sec-label { display:flex; align-items:baseline; gap:0.6rem; }
+        .sec-num   { font-size:0.78rem; font-weight:700; color:${W50}; font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; }
+        .sec-slash { color:${W25}; font-size:0.78rem; }
+        .sec-title { font-size:0.78rem; font-weight:700; color:${W25}; letter-spacing:0.2em; text-transform:uppercase; }
 
-        /* ── Headings ── */
+        /* Headings */
         .sec-heading {
-          font-size: clamp(2rem, 4.5vw, 3.2rem);
-          font-weight: 500;
-          letter-spacing: -0.035em;
-          line-height: 1.05;
-          color: ${W};
-          margin: 0;
-          font-family: 'Poppins', sans-serif;
+          font-size:clamp(2rem,4.5vw,3.2rem); font-weight:500;
+          letter-spacing:-0.035em; line-height:1.05; color:${W}; margin:0;
+          font-family:'Poppins',sans-serif;
         }
         .sec-heading em {
-          font-family: 'Source Serif 4', serif;
-          font-style: italic;
-          font-weight: 300;
-          color: ${W80};
+          font-family:'Source Serif 4',serif; font-style:italic; font-weight:300; color:${W80};
         }
 
-        /* ── Two-col grid ── */
-        .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+        /* Grids */
+        .two-col    { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start; }
+        .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start; }
 
-        /* ── Project cards ── */
+        /* Project cards */
         .proj-card {
-          background: rgba(255,255,255,0.01);
-          backdrop-filter: blur(4px);
-          box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.20);
-          border-radius: 1.5rem;
-          padding: 1.75rem 2rem;
-          display: flex; gap: 2rem; align-items: flex-start;
-          position: relative; overflow: hidden;
-          margin-bottom: 0.875rem;
-          transition: box-shadow 0.25s;
+          background:rgba(255,255,255,0.01);
+          backdrop-filter:blur(4px);
+          box-shadow:inset 0 1px 1px rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.20);
+          border-radius:1.5rem; padding:1.75rem 2rem;
+          display:flex; gap:2rem; align-items:flex-start;
+          position:relative; overflow:hidden; margin-bottom:0.875rem;
+          transition:box-shadow 0.25s;
         }
         .proj-card::before {
-          content: ''; position: absolute; inset: 0; border-radius: inherit;
-          padding: 1.4px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.10) 20%, transparent 40%, transparent 60%, rgba(255,255,255,0.10) 80%, rgba(255,255,255,0.38) 100%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor; mask-composite: exclude;
-          pointer-events: none; z-index: 0;
+          content:''; position:absolute; inset:0; border-radius:inherit; padding:1.4px;
+          background:linear-gradient(180deg,rgba(255,255,255,0.38) 0%,rgba(255,255,255,0.10) 20%,transparent 40%,transparent 60%,rgba(255,255,255,0.10) 80%,rgba(255,255,255,0.38) 100%);
+          -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+          -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; z-index:0;
         }
-        .proj-card > * { position: relative; z-index: 1; }
-        .proj-card:hover { box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 4px 32px rgba(255,255,255,0.06), 0 0 0 1px rgba(255,255,255,0.12); }
-        .proj-num  { font-size: clamp(2.5rem,5vw,4rem); font-weight: 700; color: rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; letter-spacing:-0.04em; line-height:1; flex-shrink:0; user-select:none; }
-        .proj-name { font-size: 1.1rem; font-weight: 500; color: ${W}; letter-spacing:-0.02em; margin:0; font-family:'Poppins',sans-serif; }
-        .proj-visual { flex-shrink: 0; width: clamp(200px,32%,360px); }
+        .proj-card > * { position:relative; z-index:1; }
+        .proj-card:hover { box-shadow:inset 0 1px 1px rgba(255,255,255,0.15),0 4px 32px rgba(255,255,255,0.06),0 0 0 1px rgba(255,255,255,0.12); }
+        .proj-num  { font-size:clamp(2.5rem,5vw,4rem); font-weight:700; color:rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; letter-spacing:-0.04em; line-height:1; flex-shrink:0; user-select:none; }
+        .proj-name { font-size:1.1rem; font-weight:500; color:${W}; letter-spacing:-0.02em; margin:0; font-family:'Poppins',sans-serif; }
+        .proj-visual { flex-shrink:0; width:clamp(200px,32%,360px); }
 
-        /* ── IDE ── */
+        /* IDE */
         .ide-window { background:#080812; border-radius:10px; border:1px solid rgba(255,255,255,0.04); overflow:hidden; font-family:'JetBrains Mono',monospace; font-size:0.72rem; line-height:1.78; }
         .ide-bar { background:#0e0e1c; padding:9px 14px; display:flex; align-items:center; gap:6px; border-bottom:1px solid rgba(255,255,255,0.04); }
         .ide-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
@@ -1250,60 +1147,37 @@ export default function Page() {
         .ide-body pre { margin:0; }
         .ide-cursor { display:inline-block; width:2px; height:1em; background:rgba(255,255,255,0.7); vertical-align:middle; animation:cursor-blink 1.1s step-end infinite; margin-left:1px; }
 
-        /* ── Syntax tokens ── */
-        .tok-cm  { color:rgba(255,255,255,0.28); font-style:italic; }
-        .tok-kw  { color:#c084fc; }
-        .tok-im  { color:#67e8f9; }
-        .tok-cls { color:#a5f3fc; }
-        .tok-fn  { color:#fde68a; }
-        .tok-str { color:#86efac; }
-        .tok-num { color:#fdba74; }
-        .tok-op  { color:rgba(255,255,255,0.4); }
-        .tok-var { color:rgba(255,255,255,0.78); }
-        .tok-pm  { color:#f9a8d4; }
+        /* Syntax */
+        .tok-cm{color:rgba(255,255,255,0.28);font-style:italic}.tok-kw{color:#c084fc}.tok-im{color:#67e8f9}.tok-cls{color:#a5f3fc}.tok-fn{color:#fde68a}.tok-str{color:#86efac}.tok-num{color:#fdba74}.tok-op{color:rgba(255,255,255,0.4)}.tok-var{color:rgba(255,255,255,0.78)}.tok-pm{color:#f9a8d4}
 
-        /* ── Form inputs ── */
+        /* Form */
         .noir-input {
-          background: rgba(255,255,255,0.05); border: none;
-          border-radius: 10px; color: ${W}; padding: 10px 14px; width: 100%;
-          outline: none; font-family: 'Poppins', sans-serif; font-size: 0.875rem;
-          box-shadow: inset 0 1px 1px rgba(255,255,255,0.08);
-          transition: box-shadow 0.2s;
-          position: relative;
+          background:rgba(255,255,255,0.05); border:none; border-radius:10px;
+          color:${W}; padding:10px 14px; width:100%; outline:none;
+          font-family:'Poppins',sans-serif; font-size:0.875rem;
+          box-shadow:inset 0 1px 1px rgba(255,255,255,0.08); transition:box-shadow 0.2s;
         }
-        .noir-input:focus { box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.20); }
-        .noir-input::placeholder { color: ${W25}; }
+        .noir-input:focus { box-shadow:inset 0 1px 1px rgba(255,255,255,0.15),0 0 0 1px rgba(255,255,255,0.20); }
+        .noir-input::placeholder { color:${W25}; }
         select.noir-input option { background:#0d0d1a; color:${W}; }
 
-        /* ── Noise + vignette ── */
+        /* Noise */
         .noise {
           position:fixed; inset:0; pointer-events:none; z-index:9999;
           background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
           opacity:0.035;
         }
-        .vignette {
-          position:fixed; inset:0; pointer-events:none; z-index:1;
-          background:radial-gradient(ellipse 90% 80% at 50% 40%, transparent 30%, rgba(3,3,6,0.72) 100%);
-        }
 
-        /* ── Live dot ── */
+        /* Live dot */
         .live-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; box-shadow:0 0 6px #22c55e; animation:blink 1.5s ease-in-out infinite; flex-shrink:0; display:inline-block; }
 
-        /* ── Glass Box ── */
+        /* GlassBox */
         .gb-root { position:relative; width:100%; height:360px; border-radius:1.25rem; overflow:hidden; cursor:crosshair; user-select:none; -webkit-user-select:none; }
         .gb-code { position:absolute; inset:0; background:#070714; padding:22px 28px; display:flex; align-items:center; }
         .gb-pre { font-family:'JetBrains Mono','Courier New',monospace; font-size:11.5px; line-height:1.72; color:rgba(255,255,255,0.55); white-space:pre; margin:0; pointer-events:none; }
         .gb-line { display:block; }
-        .gb-cm { color:#f472b6; } .gb-kw { color:#60a5fa; } .gb-cl { color:#a78bfa; }
-        .gb-st { color:#fb923c; } .gb-vr { color:#34d399; } .gb-fn { color:#e879f9; }
-        .gb-nm { color:#fbbf24; } .gb-pu { color:rgba(255,255,255,0.35); }
-        .gb-glass {
-          position:absolute; inset:0;
-          background:rgba(5,5,18,0.80); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-          transition:background 0.12s,backdrop-filter 0.12s;
-          mask-image:radial-gradient(circle 120px at var(--gcx,-300px) var(--gcy,-300px), rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.15) 55px, rgba(0,0,0,1) 120px);
-          -webkit-mask-image:radial-gradient(circle 120px at var(--gcx,-300px) var(--gcy,-300px), rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.15) 55px, rgba(0,0,0,1) 120px);
-        }
+        .gb-cm{color:#f472b6}.gb-kw{color:#60a5fa}.gb-cl{color:#a78bfa}.gb-st{color:#fb923c}.gb-vr{color:#34d399}.gb-fn{color:#e879f9}.gb-nm{color:#fbbf24}.gb-pu{color:rgba(255,255,255,0.35)}
+        .gb-glass { position:absolute; inset:0; background:rgba(5,5,18,0.80); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); transition:background 0.12s,backdrop-filter 0.12s; mask-image:radial-gradient(circle 120px at var(--gcx,-300px) var(--gcy,-300px),rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.15) 55px,rgba(0,0,0,1) 120px); -webkit-mask-image:radial-gradient(circle 120px at var(--gcx,-300px) var(--gcy,-300px),rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.15) 55px,rgba(0,0,0,1) 120px); }
         .gb-ui { padding:24px 30px; height:100%; display:flex; flex-direction:column; justify-content:center; gap:10px; }
         .gb-ui-label { font-family:'JetBrains Mono',monospace; font-size:0.72rem; margin-bottom:-2px; }
         .gb-ui-title { font-size:clamp(1.6rem,3vw,2.2rem); font-weight:700; letter-spacing:-0.04em; color:${W}; line-height:1; font-family:'Poppins',sans-serif; }
@@ -1312,9 +1186,10 @@ export default function Page() {
         .gb-ui-btn:hover { background:rgba(255,255,255,0.20); }
         .gb-cursor-ring { position:absolute; width:120px; height:120px; border-radius:50%; border:1px solid rgba(255,255,255,0.30); pointer-events:none; z-index:10; left:var(--gcx,-300px); top:var(--gcy,-300px); transform:translate(-50%,-50%); transition:left 0.04s,top 0.04s; }
         .gb-scanning .gb-glass { background:rgba(5,5,18,0.10); backdrop-filter:blur(1px); -webkit-backdrop-filter:blur(1px); }
-        .gb-scanning::after { content:""; position:absolute; inset:0; z-index:20; pointer-events:none; background:repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px); animation:gb-scan-slide 0.08s linear infinite; }
+        .gb-scanning::after { content:""; position:absolute; inset:0; z-index:20; pointer-events:none; background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(255,255,255,0.05) 2px,rgba(255,255,255,0.05) 4px); animation:gb-scan-slide 0.08s linear infinite; }
+        .gb-jitter { animation:gb-jitter 0.9s steps(1) forwards; }
 
-        /* ── Keyframes ── */
+        /* Keyframes */
         @keyframes blink        { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.8)} }
         @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes orbit-ring   { from{transform:rotateX(70deg) rotateZ(0deg)} to{transform:rotateX(70deg) rotateZ(360deg)} }
@@ -1323,27 +1198,21 @@ export default function Page() {
         @keyframes mq-rev       { from{transform:translateX(-50%)} to{transform:translateX(0)} }
         @keyframes gb-jitter    { 0%,100%{transform:translate(0,0)} 7%{transform:translate(-3px,1px)} 14%{transform:translate(3px,-2px)} 21%{transform:translate(-2px,3px)} 49%{transform:translate(-3px,1px)} 77%{transform:translate(-1px,2px)} }
         @keyframes gb-scan-slide{ from{background-position:0 0} to{background-position:0 4px} }
-        @keyframes text-glow    { 0%,100%{text-shadow:0 0 18px rgba(255,255,255,0.3)} 50%{text-shadow:0 0 32px rgba(255,255,255,0.6)} }
 
-        .gb-jitter { animation:gb-jitter 0.9s steps(1) forwards; }
-
-        /* ── Mobile ── */
+        /* Mobile */
         @media (max-width: 1023px) {
-          #hero { flex-direction: column !important; }
-          .about-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .two-col    { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .proj-card  { flex-direction: column !important; }
-          .proj-visual { width: 100% !important; }
-          nav { padding: 0 1rem !important; }
-          .gb-root { height: 280px !important; }
-          .gb-pre { font-size: 9.5px !important; }
-          .gb-cursor-ring { display: none !important; }
-          .gb-ui { padding: 16px 18px !important; }
+          #hero { flex-direction:column !important; }
+          .about-grid { grid-template-columns:1fr !important; gap:2rem !important; }
+          .two-col    { grid-template-columns:1fr !important; gap:2rem !important; }
+          .proj-card  { flex-direction:column !important; }
+          .proj-visual { width:100% !important; }
+          nav { padding:0 1rem !important; }
+          .gb-root { height:280px !important; }
+          .gb-pre { font-size:9.5px !important; }
+          .gb-cursor-ring { display:none !important; }
+          .gb-ui { padding:16px 18px !important; }
         }
-        @media (max-width: 640px) {
-          .sec-veil { background: rgba(4,4,10,0.82) !important; }
-        }
-        a { -webkit-tap-highlight-color: transparent; }
+        a { -webkit-tap-highlight-color:transparent; }
       `}</style>
     </>
   );
