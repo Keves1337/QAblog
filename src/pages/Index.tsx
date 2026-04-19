@@ -491,24 +491,6 @@ export default function Page() {
                 </p>
               </motion.div>
 
-              {/* Bottom feature section */}
-              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay:0.56, duration:0.6 }}
-                className="lg" style={{ borderRadius:"2.5rem", padding:"1.25rem",
-                  background:"rgba(0,0,0,0.45)" }}
-              >
-                <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
-                  className="lg" style={{ display:"block", borderRadius:"1.5rem", padding:"1.25rem 1.25rem",
-                    textDecoration:"none", transition:"transform 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform="scale(1.02)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                >
-                  <Shield size={22} color={W} style={{ marginBottom:"10px", opacity:0.85 }} />
-                  <div style={{ fontSize:"0.9rem", fontWeight:500, color:W, fontFamily:"'Poppins',sans-serif" }}>BehemothQA</div>
-                  <div style={{ fontSize:"0.74rem", color:W60, marginTop:"4px" }}>Security testing platform</div>
-                </a>
-              </motion.div>
-
               {/* Scroll indicator */}
               <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
                 transition={{ delay:1.1, duration:0.6 }}
