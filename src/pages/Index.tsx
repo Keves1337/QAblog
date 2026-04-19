@@ -370,17 +370,11 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* Hero card — half-width glass card with 3D tilt on hover/touch */}
-              <motion.div
-                ref={tiltRef}
-                style={{ rotateX:sTiltX, rotateY:sTiltY,
-                  transformStyle:"preserve-3d", perspective:900,
-                  width: "fit-content", maxWidth: isMobile ? "100%" : "clamp(280px,44%,440px)",
+              {/* Hero card — half-width glass card */}
+              <div
+                style={{ width:"fit-content",
+                  maxWidth: isMobile ? "100%" : "clamp(280px,44%,440px)",
                   alignSelf:"flex-start" }}
-                onMouseMove={e => handleTilt(e.clientX, e.clientY)}
-                onMouseLeave={resetTilt}
-                onTouchMove={e => { e.preventDefault(); handleTilt(e.touches[0].clientX, e.touches[0].clientY); }}
-                onTouchEnd={resetTilt}
               >
               <div className="lgs" style={{ borderRadius:"1.75rem", display:"flex",
                 flexDirection:"column", justifyContent:"center", width:"100%",
@@ -454,7 +448,7 @@ export default function Page() {
                   ))}
                 </motion.div>
               </div>
-              </motion.div>
+              </div>
 
               {/* Bottom quote — floats over raw video below the glass card */}
               <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
