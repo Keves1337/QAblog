@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Mail, Phone, MapPin, Send, Shield, Zap, Eye, ChevronDown, ArrowUpRight } from "lucide-react";
+import BugSquash from "../components/BugSquash";
 
 /* ─── Palette ───────────────────────────────────────────────────────────── */
 const ACC   = "#818cf8";
@@ -430,6 +431,9 @@ export default function Index() {
       <div className="vignette" aria-hidden />
       <AmbientBg />
 
+      {/* ── Bug Squash gamified layer ── */}
+      <BugSquash />
+
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       {/* Desktop: Logo | section-links (center) | BehemothQA (right)      */}
       {/* Mobile:  row1 Logo | BehemothQA   row2 section-links (full width) */}
@@ -470,7 +474,7 @@ export default function Index() {
       </nav>
 
       {/* ── Bento grid — perspective wrapper gives entrance cards a 3D origin ── */}
-      <main style={{ position: "relative", zIndex: 2, paddingTop: "54px" }}>
+      <main style={{ position: "relative", zIndex: 2, paddingTop: "90px" }}>
         <motion.div id="about" variants={ctn} initial={isMobile ? false : "hidden"} animate="show"
           style={{
             ...(isMobile ? {} : { perspective: "1800px", perspectiveOrigin: "50% -10%" }),
@@ -873,8 +877,10 @@ export default function Index() {
             padding: 5px 8px !important;
           }
 
-          /* Main: push down to clear 2-row nav */
-          main { padding-top: 108px !important; }
+          /* Main: push down to clear 2-row nav + XP bar */
+          main { padding-top: 144px !important; }
+          /* XP bar: sits below 2-row nav on mobile */
+          :root { --nav-h: 108px; }
 
           /* ━━ BENTO GRID → single column ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
           main > div {
