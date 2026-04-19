@@ -284,7 +284,7 @@ export default function Page() {
         {/* ── Fixed nav ── */}
         <nav style={{
           position:"fixed", top:0, left:0, right:0, zIndex:100,
-          display:"flex", alignItems:"center", justifyContent:"space-between",
+          display:"grid", gridTemplateColumns:"1fr auto 1fr", alignItems:"center",
           padding:"0 2rem", minHeight:"56px",
           background:"rgba(8,8,18,0.55)", backdropFilter:"blur(14px)", WebkitBackdropFilter:"blur(14px)",
         }}>
@@ -327,7 +327,7 @@ export default function Page() {
               ))}
             </div>
           )}
-          <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"10px", justifySelf:"end" }}>
             <a href="https://www.linkedin.com/in/johnathan-milrad-502b18b2" target="_blank" rel="noopener noreferrer"
               style={{ fontSize:"0.78rem", color:W80, textDecoration:"none", padding:"4px 8px", transition:"color 0.15s" }}
               onMouseEnter={e => (e.currentTarget.style.color=W)}
