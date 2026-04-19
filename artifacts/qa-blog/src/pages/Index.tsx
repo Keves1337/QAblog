@@ -13,8 +13,8 @@ const MonolithScene = lazy(() => import("@/components/MonolithScene"));
 gsap.registerPlugin(ScrollTrigger);
 
 /* ─── Palette ───────────────────────────────────────────────────────────── */
-const ACC   = "#818cf8";
-const A_DIM = "rgba(129,140,248,0.1)";
+const ACC   = "#00e5ff";
+const A_DIM = "rgba(0,229,255,0.08)";
 const BOLD  = "#f8fafc";
 const TEXT  = "rgba(248,250,252,0.5)";
 const MUTED = "rgba(248,250,252,0.2)";
@@ -31,6 +31,24 @@ const useIsMobile = () => {
   }, []);
   return m;
 };
+
+/* ─── Letter-by-letter text reveal component ────────────────────────────── */
+function SplitText({ text, style }: { text: string; style?: React.CSSProperties }) {
+  return (
+    <span style={{ display: "inline-block", ...style }}>
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          className="split-letter"
+          style={{
+            animationDelay: `${0.30 + i * 0.042}s`,
+            whiteSpace: char === " " ? "pre" : undefined,
+          }}
+        >{char}</span>
+      ))}
+    </span>
+  );
+}
 
 /* ─── BentoCard ─────────────────────────────────────────────────────────── */
 const cardV = {
@@ -154,7 +172,7 @@ const ContactForm = () => {
           fontFamily: "'Inter', sans-serif", cursor: "pointer",
           transition: "opacity 0.15s, box-shadow 0.15s",
         }}
-          onMouseEnter={e => { const b = e.currentTarget; b.style.opacity = "0.85"; b.style.boxShadow = "0 0 24px rgba(129,140,248,0.6)"; }}
+          onMouseEnter={e => { const b = e.currentTarget; b.style.opacity = "0.85"; b.style.boxShadow = "0 0 24px rgba(0,229,255,0.6)"; }}
           onMouseLeave={e => { const b = e.currentTarget; b.style.opacity = "1"; b.style.boxShadow = "none"; }}
         >Send <Send style={{ width: "13px", height: "13px" }} /></button>
       </div>
@@ -192,7 +210,7 @@ const OrbitRing = ({ size = 80, speed = "10s", opacity = 0.18, dotColor = ACC }:
   <div style={{
     position: "absolute", width: size, height: size,
     borderRadius: "50%",
-    border: `1px solid rgba(129,140,248,${opacity})`,
+    border: `1px solid rgba(0,229,255,${opacity})`,
     animation: `orbit-ring ${speed} linear infinite`,
     transformStyle: "preserve-3d",
     pointerEvents: "none",
@@ -313,7 +331,7 @@ const CertFlipCard = () => {
         style={{ width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d" }}
       >
         <div style={FACE}>
-          <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", background: A_DIM, border: "1px solid rgba(129,140,248,0.2)" }}>
+          <div style={{ padding: "11px", borderRadius: "11px", flexShrink: 0, animation: "float-badge 5.5s ease-in-out infinite", background: A_DIM, border: "1px solid rgba(0,229,255,0.18)" }}>
             <Shield style={{ width: "18px", height: "18px", color: ACC }} strokeWidth={1.5} />
           </div>
           <div>
@@ -523,7 +541,7 @@ export default function Index() {
           const dy = (e.clientY - r.top)  / r.height - 0.5;
           el.style.transform = `perspective(1000px) rotateX(${-dy * 9}deg) rotateY(${dx * 9}deg) translateZ(8px)`;
           el.style.transition = "transform 0.08s ease, box-shadow 0.15s ease";
-          el.style.boxShadow  = "0 30px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(129,140,248,0.12)";
+          el.style.boxShadow  = "0 30px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(0,229,255,0.10)";
           const outer = el.parentElement as HTMLElement;
           if (outer) outer.style.zIndex = "20";
         } else {
@@ -558,7 +576,7 @@ export default function Index() {
   const BtnPrimary = useCallback(({ href, children, external }: { href?: string; children: React.ReactNode; external?: boolean }) => (
     <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}
       style={{ display: "inline-flex", alignItems: "center", gap: "7px", padding: "10px 22px", borderRadius: "9px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", transition: "opacity 0.15s, box-shadow 0.15s" }}
-      onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 28px rgba(129,140,248,0.6)"; }}
+      onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 28px rgba(0,229,255,0.6)"; }}
       onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
     >{children}</a>
   ), []);
@@ -599,8 +617,8 @@ export default function Index() {
             x: springX, y: springY, scale: sScale,
             translateX: "-50%", translateY: "-50%",
             width: 18, height: 18, borderRadius: "50%",
-            border: "1.5px solid rgba(213,197,249,0.7)",
-            background: "rgba(213,197,249,0.06)",
+            border: "1.5px solid rgba(0,229,255,0.65)",
+            background: "rgba(0,229,255,0.05)",
             backdropFilter: "blur(2px)",
           }}
         />
@@ -646,8 +664,8 @@ export default function Index() {
 
         <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
           className="nav-behemoth"
-          style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", borderRadius: "8px", background: A_DIM, border: "1px solid rgba(129,140,248,0.22)", color: ACC, fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", transition: "background 0.15s", flexShrink: 0 }}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(129,140,248,0.18)")}
+          style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", borderRadius: "8px", background: A_DIM, border: "1px solid rgba(0,229,255,0.20)", color: ACC, fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", transition: "background 0.15s", flexShrink: 0 }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,229,255,0.15)")}
           onMouseLeave={e => (e.currentTarget.style.background = A_DIM)}
         >BehemothQA <ExternalLink style={{ width: "10px", height: "10px" }} /></a>
       </nav>
@@ -675,13 +693,24 @@ export default function Index() {
           pointerEvents: "none",
         }} />
 
+        {/* Invisible monolith proximity target — enables magnetic cursor to sense
+            the 3D monolith area (canvas is pointerEvents:none, so we proxy via DOM) */}
+        {!isMobile && (
+          <div aria-hidden className="mag-target" style={{
+            position: "absolute", right: "22%", top: "50%",
+            width: "clamp(120px,18vw,220px)", height: "clamp(240px,36vw,440px)",
+            transform: "translateY(-50%)", cursor: "none", zIndex: 1,
+            pointerEvents: "auto", background: "transparent",
+          }} />
+        )}
+
         {/* Big parallax word — background depth layer */}
         <div className="parallax-word" style={{
           position: "absolute", right: "clamp(1rem,8vw,12rem)", top: "50%",
           transform: "translateY(-50%)",
           fontSize: "clamp(4rem,14vw,13rem)",
           fontWeight: 900, letterSpacing: "-0.06em",
-          color: "rgba(213,197,249,0.04)",
+          color: "rgba(0,229,255,0.04)",
           userSelect: "none", pointerEvents: "none",
           lineHeight: 1,
           fontFamily: "'Inter', sans-serif",
@@ -698,19 +727,22 @@ export default function Index() {
             <span style={{ fontSize: "0.72rem", fontWeight: 700, color: G, textTransform: "uppercase", letterSpacing: "0.18em" }}>Available for Work</span>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.32, duration: 0.7 }}
-            style={{
-              fontSize: "clamp(2.6rem,7vw,5.2rem)",
-              fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 0.96,
-              color: BOLD, marginBottom: "1.5rem",
-            }}
-          >
-            Johnatan<br />
-            <span style={{ color: ACC, animation: "text-glow 3.5s ease-in-out infinite", display: "inline-block" }}>Milrad.</span>
-          </motion.h1>
+          <div className="hero-heading-wrap" style={{ marginBottom: "1.5rem" }}>
+            <h1
+              style={{
+                fontSize: "clamp(2.6rem,7vw,5.2rem)",
+                fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 0.96,
+                color: BOLD,
+              }}
+            >
+              <SplitText text="Johnatan" />
+              <br />
+              <SplitText
+                text="Milrad."
+                style={{ color: ACC, animation: "text-glow 3.5s ease-in-out infinite" }}
+              />
+            </h1>
+          </div>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -764,7 +796,7 @@ export default function Index() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ background: "rgba(5,5,8,0.97)" }}>
+        <div style={{ background: "rgba(7,8,14,0.94)" }}>
           <motion.div
             id="about"
             variants={ctn}
@@ -783,10 +815,10 @@ export default function Index() {
               innerStyle={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "rgba(255,255,255,0.022)" }}
             >
               <div className="hero-grid" style={{ position: "absolute", inset: 0, borderRadius: "inherit", opacity: 0.55, zIndex: 0 }} />
-              <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "240px", height: "240px", borderRadius: "50%", background: "radial-gradient(circle, rgba(129,140,248,0.13) 0%, transparent 70%)", filter: "blur(20px)", zIndex: 0, pointerEvents: "none" }} />
+              <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "240px", height: "240px", borderRadius: "50%", background: "radial-gradient(circle, rgba(0,229,255,0.10) 0%, transparent 70%)", filter: "blur(20px)", zIndex: 0, pointerEvents: "none" }} />
               <div style={{ position: "absolute", right: "36px", top: "50%", transform: "translateY(-50%)", zIndex: 0, pointerEvents: "none" }}>
                 <OrbitRing size={88} speed="11s" opacity={0.18} />
-                <div style={{ position: "absolute", inset: "16px", borderRadius: "50%", border: "1px solid rgba(129,140,248,0.08)", animation: "orbit-ring 7s linear infinite reverse" }} />
+                <div style={{ position: "absolute", inset: "16px", borderRadius: "50%", border: "1px solid rgba(0,229,255,0.06)", animation: "orbit-ring 7s linear infinite reverse" }} />
               </div>
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{ marginBottom: "22px" }}>
@@ -809,7 +841,7 @@ export default function Index() {
             </BC>
 
             {/* ══ STATUS ══════════════════════════════════════════════════ */}
-            <BC innerStyle={{ background: "rgba(129,140,248,0.04)", border: "1px solid rgba(129,140,248,0.13)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <BC innerStyle={{ background: "rgba(0,229,255,0.04)", border: "1px solid rgba(0,229,255,0.10)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "14px" }}>
                   <span className="live-dot" />
@@ -901,7 +933,7 @@ export default function Index() {
             <BC id="projects" col="span 2" row="span 2"
               innerStyle={{ display: "flex", flexDirection: "column", gap: "18px" }}
             >
-              <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "260px", height: "260px", borderRadius: "50%", background: "radial-gradient(circle, rgba(129,140,248,0.11) 0%, transparent 70%)", filter: "blur(30px)", zIndex: 0, pointerEvents: "none" }} />
+              <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "260px", height: "260px", borderRadius: "50%", background: "radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%)", filter: "blur(30px)", zIndex: 0, pointerEvents: "none" }} />
               <div style={{ position: "absolute", bottom: "80px", right: "20px", zIndex: 0, pointerEvents: "none" }}>
                 <OrbitRing size={60} speed="14s" opacity={0.12} dotColor="#67e8f9" />
               </div>
@@ -915,7 +947,7 @@ export default function Index() {
                   <p style={{ fontSize: "0.78rem", color: TEXT, margin: 0 }}>Full-scale Python QA platform. 300+ checks per run</p>
                   <a href="https://settings-qa-ai.replit.app" target="_blank" rel="noopener noreferrer"
                     style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "7px 15px", borderRadius: "8px", background: ACC, color: "#050505", fontWeight: 700, fontSize: "0.8rem", textDecoration: "none", whiteSpace: "nowrap", transition: "opacity 0.15s, box-shadow 0.15s", flexShrink: 0 }}
-                    onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 22px rgba(129,140,248,0.55)"; }}
+                    onMouseEnter={e => { const el = e.currentTarget; el.style.opacity = "0.85"; el.style.boxShadow = "0 0 22px rgba(0,229,255,0.50)"; }}
                     onMouseLeave={e => { const el = e.currentTarget; el.style.opacity = "1"; el.style.boxShadow = "none"; }}
                   >Launch App <ExternalLink style={{ width: "11px", height: "11px" }} /></a>
                 </div>
@@ -953,7 +985,7 @@ export default function Index() {
             </BC>
 
             {/* ══ CERT ══════════════════════════════════════════════════ */}
-            <BC minH="160px" innerStyle={{ background: "rgba(129,140,248,0.04)", border: "1px solid rgba(129,140,248,0.12)", display: "flex", flexDirection: "column", overflow: "visible" }}>
+            <BC minH="160px" innerStyle={{ background: "rgba(0,229,255,0.04)", border: "1px solid rgba(0,229,255,0.10)", display: "flex", flexDirection: "column", overflow: "visible" }}>
               <CertFlipCard />
             </BC>
 
@@ -980,7 +1012,7 @@ export default function Index() {
                             style={{ animation: `eq-bar ${1.1 + i * 0.18}s ease-in-out infinite alternate`, animationDelay: `${i * 0.12}s`, transformBox: "fill-box", transformOrigin: "center bottom" }}
                           />
                         ))}
-                        <line x1="4" y1="52" x2="76" y2="52" stroke={`rgba(129,140,248,0.18)`} strokeWidth="0.75"/>
+                        <line x1="4" y1="52" x2="76" y2="52" stroke={`rgba(0,229,255,0.15)`} strokeWidth="0.75"/>
                       </svg>
                     ),
                   },
@@ -990,12 +1022,12 @@ export default function Index() {
                     art: (
                       <svg viewBox="0 0 80 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "80px", height: "52px" }}>
                         <path d="M8 44 C8 12, 40 12, 40 26 S72 40, 72 8" stroke={ACC} strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-                        <line x1="8" y1="44" x2="8" y2="12" stroke={`rgba(129,140,248,0.3)`} strokeWidth="0.75" strokeDasharray="2 2"/>
-                        <line x1="72" y1="8" x2="72" y2="40" stroke={`rgba(129,140,248,0.3)`} strokeWidth="0.75" strokeDasharray="2 2"/>
-                        <circle cx="8"  cy="44" r="3" fill="rgba(129,140,248,0.15)" stroke={ACC} strokeWidth="1.5"/>
-                        <circle cx="72" cy="8"  r="3" fill="rgba(129,140,248,0.15)" stroke={ACC} strokeWidth="1.5"/>
-                        <rect x="5.5" y="9.5" width="5" height="5" rx="0.5" fill="transparent" stroke={`rgba(129,140,248,0.5)`} strokeWidth="1" transform="rotate(45 8 12)"/>
-                        <rect x="69.5" y="37.5" width="5" height="5" rx="0.5" fill="transparent" stroke={`rgba(129,140,248,0.5)`} strokeWidth="1" transform="rotate(45 72 40)"/>
+                        <line x1="8" y1="44" x2="8" y2="12" stroke={`rgba(0,229,255,0.28)`} strokeWidth="0.75" strokeDasharray="2 2"/>
+                        <line x1="72" y1="8" x2="72" y2="40" stroke={`rgba(0,229,255,0.28)`} strokeWidth="0.75" strokeDasharray="2 2"/>
+                        <circle cx="8"  cy="44" r="3" fill="rgba(0,229,255,0.12)" stroke={ACC} strokeWidth="1.5"/>
+                        <circle cx="72" cy="8"  r="3" fill="rgba(0,229,255,0.12)" stroke={ACC} strokeWidth="1.5"/>
+                        <rect x="5.5" y="9.5" width="5" height="5" rx="0.5" fill="transparent" stroke={`rgba(0,229,255,0.45)`} strokeWidth="1" transform="rotate(45 8 12)"/>
+                        <rect x="69.5" y="37.5" width="5" height="5" rx="0.5" fill="transparent" stroke={`rgba(0,229,255,0.45)`} strokeWidth="1" transform="rotate(45 72 40)"/>
                         <circle cx="40" cy="26" r="2" fill={ACC} opacity="0.6"/>
                       </svg>
                     ),
@@ -1013,7 +1045,7 @@ export default function Index() {
                         ))}
                         {[14, 28, 42].map((y, i) => {
                           const spread = (y / 52) * 36;
-                          return <line key={i} x1={40 - spread} y1={y} x2={40 + spread} y2={y} stroke={`rgba(129,140,248,${0.12 + i * 0.07})`} strokeWidth="0.75"/>;
+                          return <line key={i} x1={40 - spread} y1={y} x2={40 + spread} y2={y} stroke={`rgba(0,229,255,${0.10 + i * 0.07})`} strokeWidth="0.75"/>;
                         })}
                         <circle cx="40" cy="0" r="2.5" fill={ACC} opacity="0.9"/>
                       </svg>
@@ -1043,14 +1075,14 @@ export default function Index() {
                 ].map((h, i) => (
                   <div key={h.n}
                     style={{ padding: "20px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.055)" : "none", borderTop: "1px solid rgba(255,255,255,0.055)", transition: "background 0.25s", cursor: "default" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(129,140,248,0.028)"; }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(0,229,255,0.03)"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                   >
-                    <div style={{ fontSize: "0.6rem", fontWeight: 800, color: `rgba(129,140,248,0.35)`, letterSpacing: "0.15em", marginBottom: "16px", fontFamily: "'JetBrains Mono', monospace" }}>{h.n}</div>
+                    <div style={{ fontSize: "0.6rem", fontWeight: 800, color: `rgba(0,229,255,0.30)`, letterSpacing: "0.15em", marginBottom: "16px", fontFamily: "'JetBrains Mono', monospace" }}>{h.n}</div>
                     <div style={{ marginBottom: "18px", animation: `float-badge ${4 + i * 0.5}s ease-in-out infinite`, animationDelay: `${i * 0.25}s`, display: "inline-block" }}>
                       {h.art}
                     </div>
-                    <div style={{ width: "24px", height: "1px", background: `rgba(129,140,248,0.3)`, marginBottom: "12px" }} />
+                    <div style={{ width: "24px", height: "1px", background: `rgba(0,229,255,0.28)`, marginBottom: "12px" }} />
                     <div style={{ fontWeight: 700, fontSize: "0.87rem", color: BOLD, marginBottom: "7px", letterSpacing: "-0.01em" }}>{h.t}</div>
                     <div style={{ fontSize: "0.74rem", color: TEXT, lineHeight: 1.65 }}>{h.d}</div>
                   </div>
