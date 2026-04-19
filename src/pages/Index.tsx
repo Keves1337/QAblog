@@ -621,13 +621,6 @@ export default function Page() {
                       <span key={t} className="lg-pill tech-tag">{t}</span>
                     ))}
                   </div>
-                  <a href="https://github.com/Keves1337" target="_blank" rel="noopener noreferrer"
-                    className="lg-pill" style={{ display:"inline-flex", alignItems:"center", gap:"5px",
-                      padding:"9px 20px", borderRadius:"99px", color:W60, fontWeight:500,
-                      fontSize:"0.82rem", textDecoration:"none", transition:"color 0.15s" }}
-                    onMouseEnter={e => (e.currentTarget.style.color=W)}
-                    onMouseLeave={e => (e.currentTarget.style.color=W60)}
-                  >GitHub <ExternalLink style={{ width:"11px", height:"11px" }} /></a>
                   {/* Module mini cards — lives inside text column, naturally aligned with title */}
                   <div style={{ display:"grid", marginTop:"1.25rem",
                     gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap:"10px" }}>
