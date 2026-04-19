@@ -442,11 +442,7 @@ export default function Page() {
                   "A <em style={{ fontFamily:"'Source Serif 4',serif", fontStyle:"italic" }}>precise eye</em>{" "}
                   finds what automated tools miss."
                 </p>
-                <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-                  <div style={{ flex:1, height:"1px", background:W25 }} />
-                  <span style={{ fontSize:"0.62rem", letterSpacing:"0.14em", color:W50 }}>JOHNATAN MILRAD</span>
-                  <div style={{ flex:1, height:"1px", background:W25 }} />
-                </div>
+                <div style={{ height:"1px", background:W25, width:"100%" }} />
               </motion.div>
             </div>
           </div>
